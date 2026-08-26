@@ -1,0 +1,6 @@
+# torch==2.8.0 and torchvision==0.23.0 must be supplied by the base environment.
+transformers==4.57.1
+huggingface-hub==0.36.0
+tokenizers==0.22.2
+accelerate==1.13.0
+torchcodec==0.6.0

@@ -1,0 +1,105 @@
+{
+  "version": 2,
+  "webui": {
+    "url_env": "JOYVL_WEB_URL",
+    "input_mode": "upload",
+    "expected_title": "JoyAI-VL-Interaction",
+    "identity_markers": [
+      "videoFileInput",
+      "/api/video/upload"
+    ],
+    "username_env": "JOYVL_WEB_USERNAME",
+    "password_env": "JOYVL_WEB_PASSWORD",
+    "tls_reject_unauthorized": false
+  },
+  "network": {
+    "mode": "direct"
+  },
+  "evaluation_protocol": "joyai-formal-query-once-frame-stream-v1",
+  "frame_scheduler": {
+    "max_in_flight": 1,
+    "busy_policy": "skip",
+    "queue_capacity": 0,
+    "process_interval_s": 1,
+    "frames_per_batch": 1
+  },
+  "upstream_request_policy": {
+    "sdk_max_retries": 0,
+    "non_query_timeout_s": 30,
+    "query_timeout_s": 180,
+    "warmup_timeout_s": 180
+  },
+  "vlm_registry": "config/vlm_models.json",
+  "task_source": {
+    "manifest": "data/recording_tasks_75.jsonl",
+    "xlsx": "data/JoyAI-VL-Interaction评测.xlsx",
+    "sheet": "V1_题目池",
+    "video_dir": "data/interaction-75题"
+  },
+  "output_root": "outputs/recording_campaign",
+  "defaults": {
+    "attempt_work_root": "/tmp/joyvl-recording",
+    "max_parallel_models": 5,
+    "max_task_retries": 5,
+    "max_failed_task_recovery_batches": 2,
+    "max_task_wall_s": 3600,
+    "max_infrastructure_restarts": 5,
+    "max_provider_query_start_drift_s": 5,
+    "progress_interval_s": 1800,
+    "phase_restart_backoff_s": 60
+  },
+  "models": [
+    {
+      "id": "joyai-vl-interaction",
+      "enabled": true,
+      "runner": "adapter",
+      "vlm_profile": "joyai-formal"
+    },
+    {
+      "id": "doubao-seed-2.1-pro",
+      "enabled": true,
+      "runner": "joyai_scaffold",
+      "vlm_profile": "doubao-seed-2.1-pro-joyai-frame-stream",
+      "proxy_port": 18271,
+      "disable_thinking": false,
+      "continue_after_task_failure": true
+    },
+    {
+      "id": "mage-vl",
+      "enabled": true,
+      "runner": "prompt_proxy",
+      "vlm_profile": "mage-vl-native-realtime",
+      "proxy_port": 18272,
+      "native_streaming_mode_policy": "interactive-after-query",
+      "native_system_prompt_transport": "system-role",
+      "native_frame_clock": "inbound-turn",
+      "disable_thinking": false,
+      "continue_after_task_failure": true
+    },
+    {
+      "id": "moss-vl-realtime",
+      "enabled": true,
+      "runner": "prompt_proxy",
+      "vlm_profile": "moss-vl-realtime-native",
+      "proxy_port": 18273,
+      "native_streaming_mode_policy": "proactive",
+      "native_system_prompt_transport": "system-role",
+      "native_frame_clock": "wall-media",
+      "disable_thinking": false,
+      "continue_after_task_failure": true
+    },
+    {
+      "id": "minicpmo-4.5-9b-native-video-v2",
+      "enabled": true,
+      "runner": "prompt_proxy",
+      "vlm_profile": "minicpm-o-4.5-9b-realtime-v2",
+      "proxy_port": 18270,
+      "native_query_audio_manifest": "data/minicpmo_query_audio/manifest.json",
+      "native_streaming_mode_policy": "proactive",
+      "native_system_prompt_transport": "system-role",
+      "native_frame_clock": "inbound-turn",
+      "disable_thinking": false,
+      "continue_after_task_failure": true
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/jd-opensource/JoyAI-VL-Interaction.git",
+  "commit": "6bb5a0a5267c7072e043ebc87289c44b45ca3632",
+  "imported_at": "2026-08-18",
+  "files": {
+    "live_adapter.py": "a6979898b2178b5bbd6d8da7854c64fe51d46d7dcebe56f4f4f606a69c23dae3",
+    "memory_summarizer.py": "9490cf336440a799db8f90320a7b7c67a5ab67f2bc034bc06817e1bbdbc9fba2"
+  },
+  "local_modifications": false
+}
