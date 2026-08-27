@@ -134,6 +134,16 @@ bash scripts/judge_all.sh start
 bash scripts/judge_all.sh status
 ```
 
+## Codex Skill
+
+The repository includes an agent-facing InteractFlow Skill at
+`skills/interactflow/`. Install or link that directory into the skills location
+used by your Codex environment, then invoke `$interactflow` when asking Codex
+to validate, run, monitor, resume, diagnose, or audit the recording-plus-Judge
+workflow. The Skill delegates execution to the supported scripts above and
+does not contain credentials, datasets, model weights, or a second copy of the
+pipeline.
+
 ## Scores and outputs
 
 The public workbook expresses its anchors as G/F/P. The manifest builder maps

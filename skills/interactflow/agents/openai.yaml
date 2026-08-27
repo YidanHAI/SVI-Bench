@@ -1,0 +1,4 @@
+interface:
+  display_name: "InteractFlow"
+  short_description: "Run and monitor SVI-Bench recording and Judge"
+  default_prompt: "Use $interactflow to validate, run, monitor, and resume the SVI-Bench recording and five-stage Judge workflow."
