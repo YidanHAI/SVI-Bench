@@ -21,13 +21,48 @@ Read a repository-level `AGENTS.md` before acting. Then inspect `README.md`,
 `DATA.md`, `.env.example`, and `config/recording_campaign.json`. Never treat a
 path stored inside this Skill as the user's project root.
 
+## Honor the one-invocation contract
+
+When the user asks to start the full workflow, use the bundled front door:
+
+```bash
+python3 skills/interactflow/scripts/interactflow.py start
+```
+
+The command performs a secret-safe preflight, prepares the 75-task manifest
+and MiniCPM query audio, validates the formal configuration, and delegates to
+`bash scripts/run_all.sh start`. It must either start the complete
+recording-then-Judge supervisor or start nothing.
+
+If preflight reports `needs_configuration`, tell the user only the missing
+variable names, files, executables, or packages and the reported setup
+commands. Never ask them to paste secret values into chat. After the user says
+the setup is complete, rerun the same `start` command; do not make them invoke
+the preparation stages manually.
+
+After a successful start, continue monitoring with:
+
+```bash
+python3 skills/interactflow/scripts/interactflow.py status
+```
+
+Keep monitoring through recording and all five Judge stages until the
+completion audit passes or a genuine blocker requires user action. The
+background repository supervisor performs the recording-to-Judge handoff;
+the Skill remains the intelligent operator that checks progress, diagnoses
+stalls, and invokes supported resume behavior.
+
 ## Interpret the request
 
 - For status, inspection, explanation, or diagnosis, perform read-only checks.
   Do not start, stop, resume, rerecord, or rejudge anything.
 - For validation or setup, prepare local derived inputs and run checks without
   calling model APIs unless the user explicitly requests a live smoke test.
-- For a full run, use `bash scripts/run_all.sh start` only after preflight passes.
+- For a read-only setup report, run
+  `python3 skills/interactflow/scripts/interactflow.py check`.
+- For a full run, prefer the bundled `interactflow.py start` front door. It
+  calls `bash scripts/run_all.sh start` only after preflight and preparation
+  pass.
 - For recording-only or Judge-only work, use the corresponding supported
   wrapper. Do not assemble ad hoc per-model commands.
 - Stop a live campaign only when the user explicitly requests it.

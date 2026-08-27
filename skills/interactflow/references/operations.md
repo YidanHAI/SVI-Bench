@@ -14,6 +14,25 @@
 
 Work from the resolved repository root.
 
+Use the bundled wrapper first:
+
+```bash
+python3 skills/interactflow/scripts/interactflow.py check
+```
+
+This check is read-only and never calls a model API. It reports only missing
+credential variable names, never their values. For an explicitly requested
+full run, use:
+
+```bash
+python3 skills/interactflow/scripts/interactflow.py start
+```
+
+`start` runs preflight, prepares and verifies derived inputs, calls the formal
+validation entrypoint, and starts the end-to-end supervisor. A failed
+preflight starts neither recording nor Judge. Use the lower-level commands in
+this reference for diagnosis or for an explicitly requested single phase.
+
 Confirm tools without exposing secrets:
 
 ```bash
@@ -93,6 +112,10 @@ python scripts/prepare_minicpmo_query_audio.py \
 Require a non-empty `data/minicpmo_query_audio/manifest.json` whose source task
 hash matches the current task manifest.
 
+During the normal one-invocation flow these preparation commands are run by
+`interactflow.py start`; users need only supply the workbook, videos, and
+optional mapping file.
+
 ## 3. Run and monitor
 
 Validate before starting:
@@ -114,7 +137,7 @@ bash scripts/run_all.sh start
 Inspect progress with:
 
 ```bash
-bash scripts/run_all.sh status
+python3 skills/interactflow/scripts/interactflow.py status
 bash scripts/record_all.sh status
 bash scripts/judge_all.sh status
 ```

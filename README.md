@@ -144,6 +144,21 @@ workflow. The Skill delegates execution to the supported scripts above and
 does not contain credentials, datasets, model weights, or a second copy of the
 pipeline.
 
+For example, ask: `Use $interactflow to start the complete benchmark.` The
+Skill first runs a secret-safe setup check. If anything is missing, it reports
+the required variable names, files, or installation commands and starts
+nothing. Once setup is complete, the same request prepares the manifest and
+MiniCPM query audio, launches recording, hands the completed recordings to the
+five-stage Judge, and monitors the workflow through its completion audit.
+
+The deterministic front door used by the Skill is also available directly:
+
+```bash
+python3 skills/interactflow/scripts/interactflow.py check
+python3 skills/interactflow/scripts/interactflow.py start
+python3 skills/interactflow/scripts/interactflow.py status
+```
+
 ## Scores and outputs
 
 The public workbook expresses its anchors as G/F/P. The manifest builder maps
