@@ -52,6 +52,8 @@ pass, review 1, review 2, adjudication, and final review. The audit modules
 verify request blindness, evidence identity, stage provenance, retry ledgers,
 and final deliverability.
 
-The language model emits only G/S/B grades. `judge_scoring.py` deterministically
-derives the raw dimension mean, the official item-level D1/D2-coupled score,
-and the diagnostic score without D3.
+The public workbook uses G/F/P anchor labels. During manifest construction F
+and P are normalized to the already validated Judge labels S and B, so the
+language model still emits only G/S/B grades. `judge_scoring.py`
+deterministically derives the raw dimension mean, the official item-level
+D1/D2-coupled score, and the diagnostic score without D3.

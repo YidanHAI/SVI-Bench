@@ -5,9 +5,10 @@ formal configuration expects this local layout:
 
 ```text
 data/
-├── JoyAI-VL-Interaction评测.xlsx
+├── SVIBench-开源表.xlsx
 ├── interaction-75题/
-│   └── *.mp4
+│   └── <task-id>.mp4
+├── media_index.jsonl          # optional when media are not named by task id
 ├── recording_tasks_75.jsonl
 ├── recording_tasks_75.report.json
 └── minicpmo_query_audio/
@@ -16,13 +17,22 @@ data/
         └── *.f32le
 ```
 
-The workbook's `V1_题目池` sheet defines the selected tasks and the
+The workbook's `题目池` sheet defines exactly 75 formal tasks and the
 `评测维度` sheet defines the Judge rubric. `interaction-75题/` contains the
-corresponding source MP4 files. Build the two derived inputs with:
+corresponding source MP4 files. Name each file with its task id when possible,
+for example `A1001.mp4`. If media retain descriptive filenames, provide an
+optional `media_index.jsonl` with one mapping per line:
+
+```json
+{"id":"A1001","video":"interaction-75题/加油站起火.mp4"}
+```
+
+Build the two derived inputs with:
 
 ```bash
 python scripts/build_tasks_from_xlsx.py \
-  --xlsx data/JoyAI-VL-Interaction评测.xlsx \
+  --xlsx data/SVIBench-开源表.xlsx \
+  --sheet 题目池 \
   --video-dir data/interaction-75题 \
   --out data/recording_tasks_75.jsonl \
   --report data/recording_tasks_75.report.json
@@ -31,6 +41,10 @@ python scripts/prepare_minicpmo_query_audio.py \
   --tasks data/recording_tasks_75.jsonl \
   --out-dir data/minicpmo_query_audio
 ```
+
+Add `--video-map data/media_index.jsonl` to the first command when using the
+optional mapping. The builder treats every non-empty id row as a formal task;
+the public workbook intentionally has no internal selection-status column.
 
 The task manifest may contain machine-local absolute paths. This is expected:
 it is generated on the machine that performs recording and remains ignored by

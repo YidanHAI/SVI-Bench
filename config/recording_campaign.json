@@ -32,8 +32,8 @@
   "vlm_registry": "config/vlm_models.json",
   "task_source": {
     "manifest": "data/recording_tasks_75.jsonl",
-    "xlsx": "data/JoyAI-VL-Interaction评测.xlsx",
-    "sheet": "V1_题目池",
+    "xlsx": "data/SVIBench-开源表.xlsx",
+    "sheet": "题目池",
     "video_dir": "data/interaction-75题"
   },
   "output_root": "outputs/recording_campaign",

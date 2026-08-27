@@ -72,7 +72,8 @@ then build the recording manifest and MiniCPM query audio:
 
 ```bash
 python scripts/build_tasks_from_xlsx.py \
-  --xlsx data/JoyAI-VL-Interaction评测.xlsx \
+  --xlsx data/SVIBench-开源表.xlsx \
+  --sheet 题目池 \
   --video-dir data/interaction-75题 \
   --out data/recording_tasks_75.jsonl \
   --report data/recording_tasks_75.report.json
@@ -135,8 +136,10 @@ bash scripts/judge_all.sh status
 
 ## Scores and outputs
 
-The Judge maps G/S/B to `1/0.5/0`. Within each task, applicable D1 and D2 are
-combined as one component using their minimum; a lone D1 or D2 is retained.
+The public workbook expresses its anchors as G/F/P. The manifest builder maps
+these labels deterministically to the validated Judge protocol's G/S/B labels
+(F to S and P to B), which map to `1/0.5/0`. Within each task, applicable D1
+and D2 are combined as one component using their minimum; a lone D1 or D2 is retained.
 That component is averaged with the other applicable dimensions, and Overall
 is the unweighted mean of all 75 task scores on a 0--100 scale. Raw
 five-dimension means remain diagnostic only.

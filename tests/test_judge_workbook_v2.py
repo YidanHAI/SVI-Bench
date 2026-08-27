@@ -20,7 +20,6 @@ TASK_HEADERS = [
     "id",
     "分类",
     "场景标签",
-    "入选状态",
     "用户 query",
     "触发点(文字描述)",
     "期望响应窗口",
@@ -29,8 +28,7 @@ TASK_HEADERS = [
 for dimension in contract.DIMENSION_IDS:
     TASK_HEADERS.extend([
         f"{dimension} 适用",
-        f"{dimension} 权重",
-        f"{dimension} G/S/B 阈值",
+        f"{dimension} G/F/P 阈值",
     ])
 
 
@@ -57,14 +55,13 @@ def inject_wps_data_validation_id(path):
 def make_workbook(path, task_count=1, rubric_note=False, blocking=False):
     workbook = Workbook()
     tasks = workbook.active
-    tasks.title = "V1_题目池"
+    tasks.title = "题目池"
     tasks.append(TASK_HEADERS)
     for index in range(task_count):
         values = {
             "id": f"A{index + 1:04d}",
             "分类": "合成测试",
             "场景标签": "合成场景",
-            "入选状态": "入选",
             "用户 query": "看到目标时提醒我",
             "触发点(文字描述)": "目标出现",
             "期望响应窗口": "一秒内",
@@ -72,27 +69,27 @@ def make_workbook(path, task_count=1, rubric_note=False, blocking=False):
         }
         for dimension in contract.DIMENSION_IDS:
             values[f"{dimension} 适用"] = "否" if blocking and dimension == "D3" else "是"
-            values[f"{dimension} 权重"] = 0.2
-            values[f"{dimension} G/S/B 阈值"] = "G：正确\nS：轻微问题\nB：错误"
+            values[f"{dimension} G/F/P 阈值"] = "G：正确\nF：轻微问题\nP：错误"
         tasks.append([values.get(header) for header in TASK_HEADERS])
 
-    validation = DataValidation(type="list", formula1='"入选,剔除"')
+    validation = DataValidation(type="list", formula1='"合成测试"')
     tasks.add_data_validation(validation)
-    validation.add("D2:D100")
+    validation.add("B2:B100")
     rubric = workbook.create_sheet("评测维度")
-    rubric.append(["维度", "定义", "触发条件", "与产品能力的对应"])
-    rubric.append(["D1. 主动触发敏感度", "正确触发响应", "目标事件", "自主交互"])
-    rubric.append(["D2. 静默正确性", "不该响应时保持安静", "无事件", "自主交互"])
+    rubric.append(["维度", "定义", "适用样本", "三档锚点（1 / 0.5 / 0）", "适用题数"])
+    rubric.append(["D1. 主动触发\nProactive triggering", "正确触发响应", "目标事件", "正确／轻微问题／错误", task_count])
+    rubric.append(["D2. 沉默正确性\nSilence correctness", "不该响应时保持安静", "无事件", "正确／轻微问题／错误", task_count])
     rubric.append([
-        "D3. 响应实时性",
+        "D3. 时延\nLatency",
         "触发点到首 token 的延迟；只对有效响应计时，无有效响应记 0",
         "需要响应",
-        "实时响应",
+        "正确／轻微问题／错误",
+        task_count - (1 if blocking else 0),
     ])
-    rubric.append(["D4.响应内容正确性", "响应内容正确", "所有样本", "通用"])
-    rubric.append(["D5. 后台委托与记忆", "委托和记忆正确", "复杂请求", "后台委托"])
+    rubric.append(["D4. 响应内容正确性\nResponse correctness", "响应内容正确", "所有样本", "正确／轻微问题／错误", task_count])
+    rubric.append(["D5. 委托与记忆\nDelegation & memory", "委托和记忆正确", "复杂请求", "正确／轻微问题／错误", task_count])
     if rubric_note:
-        rubric["E3"] = "min（）"
+        rubric["F3"] = "min（）"
     workbook.save(path)
     inject_wps_data_validation_id(path)
     return path
@@ -104,7 +101,12 @@ def test_wps_workbook_is_read_without_modifying_source(tmp_path):
     workbook = contract.load_workbook_compatible(path, read_only=True, data_only=True)
     assert workbook._joyvl_wps_data_validation_ids_removed == 1
     workbook.close()
-    assert list(contract.load_task_specs(path)) == ["A0001"]
+    specs = contract.load_task_specs(path)
+    assert list(specs) == ["A0001"]
+    assert specs["A0001"]["dimensions"]["D1"]["weight"] is None
+    assert specs["A0001"]["dimensions"]["D1"]["threshold"] == (
+        "G：正确\nS：轻微问题\nB：错误"
+    )
     assert contract.sha256(path) == before
 
 
@@ -112,7 +114,7 @@ def test_headerless_rubric_note_is_non_blocking(tmp_path):
     path = make_workbook(tmp_path / "warning.xlsx", rubric_note=True)
     bundle = contract.build_workbook_v2_contract(path, contract.load_task_specs(path))
     assert bundle["rubric_validation"]["formal_ready"] is True
-    assert bundle["rubric_validation"]["issues"][0]["cell"] == "E3"
+    assert bundle["rubric_validation"]["issues"][0]["cell"] == "F3"
     assert bundle["rubric_validation"]["issues"][0]["severity"] == "warning"
 
 
