@@ -304,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--workbook",
         type=Path,
-        default=env_path("BENCHMARK_WORKBOOK", "data/JoyAI-VL-Interaction评测.xlsx"),
+        default=env_path("BENCHMARK_WORKBOOK", "data/SVIBench-开源表.xlsx"),
     )
     parser.add_argument("--task-sheet", default=DEFAULT_TASK_SHEET)
     parser.add_argument("--rubric-sheet", default=DEFAULT_RUBRIC_SHEET)

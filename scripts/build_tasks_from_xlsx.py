@@ -7,13 +7,28 @@ import unicodedata
 from datetime import date, datetime
 from pathlib import Path
 
-from openpyxl import load_workbook
+from judge_workbook_contract import load_workbook_compatible
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_XLSX = ROOT / "data" / "JoyAI-VL-Interaction评测.xlsx"
+DEFAULT_XLSX = ROOT / "data" / "SVIBench-开源表.xlsx"
 DEFAULT_VIDEO_DIR = ROOT / "data" / "interaction-75题"
-DEFAULT_SHEET = "V1_题目池"
+DEFAULT_SHEET = "题目池"
+REQUIRED_HEADERS = (
+    "id",
+    "分类",
+    "场景标签",
+    "用户 query",
+    "query发送时间",
+    "视频时长",
+)
+VIDEO_PATH_FIELDS = (
+    "video",
+    "video_path",
+    "local_video_path",
+    "path",
+    "filename",
+)
 
 
 def clean_cell(value):
@@ -175,31 +190,100 @@ def build_video_index(video_dir):
 
 
 def load_selected_rows(xlsx_path, sheet_name):
-    wb = load_workbook(xlsx_path, read_only=True, data_only=True)
-    if sheet_name not in wb.sheetnames:
-        raise ValueError(f"Sheet {sheet_name!r} not found in {xlsx_path}")
-    ws = wb[sheet_name]
-    headers = [clean_cell(ws.cell(1, col).value) for col in range(1, ws.max_column + 1)]
-    rows = []
-    for row_idx in range(2, ws.max_row + 1):
-        row = {
-            headers[col - 1]: clean_cell(ws.cell(row_idx, col).value)
-            for col in range(1, ws.max_column + 1)
-            if headers[col - 1]
-        }
-        if str(row.get("入选状态") or "").strip() == "入选":
+    wb = load_workbook_compatible(xlsx_path, read_only=True, data_only=True)
+    try:
+        if sheet_name not in wb.sheetnames:
+            raise ValueError(f"Sheet {sheet_name!r} not found in {xlsx_path}")
+        ws = wb[sheet_name]
+        headers = [clean_cell(ws.cell(1, col).value) for col in range(1, ws.max_column + 1)]
+        missing_headers = [name for name in REQUIRED_HEADERS if name not in headers]
+        if missing_headers:
+            raise ValueError(
+                f"Sheet {sheet_name!r} is missing required columns: {missing_headers}"
+            )
+        has_selection_column = "入选状态" in headers
+        rows = []
+        seen_ids = set()
+        for row_idx in range(2, ws.max_row + 1):
+            row = {
+                headers[col - 1]: clean_cell(ws.cell(row_idx, col).value)
+                for col in range(1, ws.max_column + 1)
+                if headers[col - 1]
+            }
+            task_id = str(row.get("id") or "").strip()
+            if not task_id:
+                continue
+            if has_selection_column and str(row.get("入选状态") or "").strip() != "入选":
+                continue
+            if task_id in seen_ids:
+                raise ValueError(f"Duplicate task id {task_id!r} at row {row_idx}")
+            seen_ids.add(task_id)
             row["_source_row"] = row_idx
             rows.append(row)
-    return rows
+        return rows
+    finally:
+        wb.close()
 
 
-def find_video(row, video_index):
+def _read_video_map_rows(path):
+    text = Path(path).read_text(encoding="utf-8")
+    if Path(path).suffix.lower() == ".jsonl":
+        return [json.loads(line) for line in text.splitlines() if line.strip()]
+    value = json.loads(text)
+    if isinstance(value, list):
+        return value
+    if isinstance(value, dict):
+        for key in ("items", "videos", "tasks"):
+            if isinstance(value.get(key), list):
+                return value[key]
+        return [{"id": task_id, "video": video} for task_id, video in value.items()]
+    raise ValueError(f"Unsupported video map structure: {path}")
+
+
+def load_video_map(path, video_dir):
+    if path is None:
+        return {}
+    path = Path(path).resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"Video map does not exist: {path}")
+    video_dir = Path(video_dir).resolve()
+    result = {}
+    for index, item in enumerate(_read_video_map_rows(path), start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"Video map row {index} is not an object")
+        task_id = str(item.get("id") or item.get("task_id") or "").strip()
+        raw_video = next(
+            (item.get(field) for field in VIDEO_PATH_FIELDS if item.get(field)),
+            None,
+        )
+        if not task_id or raw_video is None:
+            raise ValueError(f"Video map row {index} needs id and video path")
+        if task_id in result:
+            raise ValueError(f"Duplicate task id {task_id!r} in video map")
+        candidate = Path(str(raw_video))
+        if not candidate.is_absolute():
+            relative_to_map = (path.parent / candidate).resolve()
+            relative_to_video_dir = (video_dir / candidate).resolve()
+            candidate = (
+                relative_to_map if relative_to_map.is_file() else relative_to_video_dir
+            )
+        result[task_id] = candidate
+    return result
+
+
+def find_video(row, video_index, video_map=None):
+    task_id = str(row.get("id") or "").strip()
+    mapped = (video_map or {}).get(task_id)
+    tried = []
+    if mapped is not None:
+        tried.append(str(mapped))
+        if mapped.is_file():
+            return mapped, tried
     candidates = [
         strip_video_label(row.get("query视频")),
         row.get("场景标签"),
         row.get("id"),
     ]
-    tried = []
     for candidate in candidates:
         if not candidate:
             continue
@@ -231,10 +315,18 @@ def build_task(row, video_path, duration, query_rounds):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build capture tasks from JoyAI-VL-Interaction.xlsx and local MP4 files.")
+    parser = argparse.ArgumentParser(description="Build capture tasks from the SVI-Bench workbook and local MP4 files.")
     parser.add_argument("--xlsx", type=Path, default=DEFAULT_XLSX)
     parser.add_argument("--sheet", default=DEFAULT_SHEET)
     parser.add_argument("--video-dir", type=Path, default=DEFAULT_VIDEO_DIR)
+    parser.add_argument(
+        "--video-map",
+        type=Path,
+        help=(
+            "Optional JSON/JSONL mapping from task id to video path. "
+            "Without it, videos are matched by legacy query-video label, scene, then id."
+        ),
+    )
     parser.add_argument("--out", type=Path, default=ROOT / "tasks.local.jsonl")
     parser.add_argument("--report", type=Path, default=ROOT / "tasks.local.report.json")
     parser.add_argument("--default-query-time-s", type=float, default=0.0)
@@ -248,6 +340,7 @@ def main():
     args = parser.parse_args()
 
     video_index, duplicates = build_video_index(args.video_dir)
+    video_map = load_video_map(args.video_map, args.video_dir)
     rows = load_selected_rows(args.xlsx, args.sheet)
     task_ids_from_file = []
     if args.task_list:
@@ -269,7 +362,7 @@ def main():
     tasks = []
     missing = []
     for row in rows:
-        video_path, tried = find_video(row, video_index)
+        video_path, tried = find_video(row, video_index, video_map)
         if not video_path:
             missing.append({
                 "id": row.get("id"),
@@ -328,6 +421,7 @@ def main():
         "xlsx": str(args.xlsx),
         "sheet": args.sheet,
         "video_dir": str(args.video_dir),
+        "video_map": str(args.video_map) if args.video_map else None,
         "selected_rows": len(rows),
         "tasks_written": len(tasks),
         "multi_round_tasks": sum(1 for task in tasks if len(task.get("queries") or []) > 1),
