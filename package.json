@@ -1,0 +1,27 @@
+{
+  "name": "svi-bench",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pipeline:validate": "bash scripts/run_all.sh validate",
+    "pipeline:start": "bash scripts/run_all.sh start",
+    "pipeline:status": "bash scripts/run_all.sh status",
+    "pipeline:stop": "bash scripts/run_all.sh stop",
+    "record:validate": "bash scripts/record_all.sh dry-run",
+    "record:start": "bash scripts/record_all.sh start",
+    "record:status": "bash scripts/record_all.sh status --json",
+    "record:stop": "bash scripts/record_all.sh stop",
+    "judge:prepare": "bash scripts/judge_all.sh prepare",
+    "judge:validate": "bash scripts/judge_all.sh validate",
+    "judge:start": "bash scripts/judge_all.sh start",
+    "judge:status": "bash scripts/judge_all.sh status",
+    "judge:stop": "bash scripts/judge_all.sh stop",
+    "check": "node --check scripts/recording_config.mjs && node --check scripts/vlm_profiles.mjs && node --check scripts/vlm_response_protocol.mjs && node --check scripts/video_quality.mjs && node --check scripts/artifact_promotion.mjs && node --check scripts/recording_attempt_audit.mjs && node --check scripts/jpeg_frame_normalizer.mjs && node --check scripts/realtime_frame_relay.mjs && node --check scripts/capture.mjs && node --check scripts/run_capture_profile.mjs && node --check scripts/run_model_matrix.mjs && node --check scripts/run_recording_job.mjs && node --check scripts/native_video_realtime_proxy.mjs && node --check scripts/joyai_native_http_session_proxy.mjs && node --check scripts/supervise_scaffold_recording.mjs && node --check scripts/run_recording_campaign.mjs && node --check scripts/verify_recording_campaign.mjs && python3 -m compileall -q scripts moss_mage_api_service/service",
+    "test": "npm run check && node --test tests/*.test.mjs && pytest -q"
+  },
+  "dependencies": {
+    "playwright": "1.57.0",
+    "ws": "^8.18.3"
+  }
+}

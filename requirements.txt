@@ -1,0 +1,10 @@
+# Core recording/Judge utilities and tests. Heavy model-serving dependencies
+# are intentionally kept in their component-specific requirement files.
+aiohttp>=3.9,<4
+edge-tts>=7,<8
+openai>=1.0,<3
+openpyxl>=3.1,<4
+opencv-python-headless>=4.8,<5
+Pillow>=10,<13
+pytest>=8,<10
+requests>=2.31,<3
