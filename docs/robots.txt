@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yidanhai.github.io/VL-Interaction-interactflow/sitemap.xml

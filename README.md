@@ -15,6 +15,7 @@ benchmark.
 [![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)](#installation)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](#installation)
 
+[Project Page](https://yidanhai.github.io/VL-Interaction-interactflow/) ·
 [Overview](#overview) · [Benchmark](#benchmark-design) ·
 [Leaderboard](#leaderboard) · [Quick start](#quick-start) ·
 [Data](DATA.md) · [InteractFlow Skill](#codex-skill) ·
@@ -427,6 +428,7 @@ A formal run is complete only when all of the following hold:
 | [`scripts/record_all.sh`](scripts/record_all.sh) | Recording-only lifecycle |
 | [`scripts/judge_all.sh`](scripts/judge_all.sh) | Judge-only lifecycle |
 | [`prompts/`](prompts/) | Frozen prompts for the five Judge stages |
+| [`docs/`](docs/) | GitHub Pages project site, figures, and protocol notes |
 | [`tests/`](tests/) | Offline protocol, scoring, resume, blindness, and audit tests |
 | [`moss_mage_api_service/`](moss_mage_api_service/) | Optional local MOSS/Mage serving adapter |
 | [`skills/interactflow/`](skills/interactflow/) | Codex operational Skill |
@@ -438,6 +440,12 @@ The complete offline suite does not call external model APIs:
 
 ```bash
 npm test
+```
+
+Preview the static Project Page locally:
+
+```bash
+python3 -m http.server 8000 --directory docs
 ```
 
 ## Citation
