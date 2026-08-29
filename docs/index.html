@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#081f33">
+    <meta name="author" content="SVI-Bench Team, JD.com">
+    <meta
+      name="description"
+      content="SVI-Bench evaluates streaming vision-language interaction across proactive triggering, silence, latency, response correctness, and long-horizon memory."
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SVI-Bench — Streaming Vision-Language Interaction">
+    <meta
+      property="og:description"
+      content="75 items, five observable dimensions, synchronized recordings, and a human-calibrated five-stage Judge."
+    >
+    <meta
+      property="og:image"
+      content="https://yidanhai.github.io/VL-Interaction-interactflow/assets/og-image.png"
+    >
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://yidanhai.github.io/VL-Interaction-interactflow/">
+    <title>SVI-Bench — Streaming Vision-Language Interaction</title>
+    <link rel="icon" href="assets/svibench-mark.svg" type="image/svg+xml">
+    <script>document.documentElement.classList.add('js');</script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-header>
+      <nav class="nav shell" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="SVI-Bench home">
+          <img src="assets/svibench-mark.svg" alt="" width="34" height="34">
+          <span>SVI-Bench</span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav-links"
+          data-nav-toggle
+        >
+          <span></span><span></span><span></span>
+          <span class="sr-only">Open navigation</span>
+        </button>
+        <div class="nav-links" id="nav-links" data-nav-links>
+          <a href="#benchmark">Benchmark</a>
+          <a href="#protocol">Protocol</a>
+          <a href="#results">Results</a>
+          <a href="#interactflow">InteractFlow</a>
+          <a href="#reproduce">Run it</a>
+          <a
+            class="nav-github"
+            href="https://github.com/YidanHAI/VL-Interaction-interactflow"
+            target="_blank"
+            rel="noreferrer"
+          >GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-glow hero-glow-a"></div>
+        <div class="hero-glow hero-glow-b"></div>
+        <div class="shell hero-grid">
+          <div class="hero-copy reveal">
+            <p class="eyebrow"><span></span> Streaming vision-language evaluation</p>
+            <h1>
+              A benchmark for models that know
+              <em>when to speak.</em>
+            </h1>
+            <p class="hero-lead">
+              SVI-Bench measures proactive triggering, correct silence,
+              latency, response quality, and long-horizon memory on the same
+              live video timeline.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#results">Explore results</a>
+              <a
+                class="button button-secondary"
+                href="https://github.com/YidanHAI/VL-Interaction-interactflow"
+                target="_blank"
+                rel="noreferrer"
+              >View code <span aria-hidden="true">↗</span></a>
+            </div>
+            <p class="release-note">
+              <span>Open workflow</span>
+              <span>Auditable evidence</span>
+              <span>Resumable evaluation</span>
+            </p>
+          </div>
+
+          <div class="hero-orbit reveal" aria-label="Five SVI-Bench evaluation dimensions">
+            <div class="orbit-ring orbit-ring-outer"></div>
+            <div class="orbit-ring orbit-ring-inner"></div>
+            <div class="orbit-core">
+              <img src="assets/svibench-mark.svg" alt="" width="70" height="70">
+              <strong>SVI</strong>
+              <span>stream · decide · respond</span>
+            </div>
+            <div class="orbit-chip chip-d1"><b>D1</b><span>Trigger</span></div>
+            <div class="orbit-chip chip-d2"><b>D2</b><span>Silence</span></div>
+            <div class="orbit-chip chip-d3"><b>D3</b><span>Latency</span></div>
+            <div class="orbit-chip chip-d4"><b>D4</b><span>Content</span></div>
+            <div class="orbit-chip chip-d5"><b>D5</b><span>Memory</span></div>
+          </div>
+        </div>
+
+        <div class="shell stat-strip reveal" aria-label="Benchmark summary">
+          <div><strong>75</strong><span>items</span></div>
+          <div><strong>9</strong><span>scenarios</span></div>
+          <div><strong>4.21 h</strong><span>source video</span></div>
+          <div><strong>272</strong><span>expert anchors</span></div>
+          <div><strong>375</strong><span>recordings</span></div>
+        </div>
+      </section>
+
+      <section class="section section-overview" id="benchmark">
+        <div class="shell">
+          <div class="section-heading reveal">
+            <p class="kicker">The benchmark</p>
+            <h2>Interaction is more than answering correctly.</h2>
+            <p>
+              A streaming assistant observes continuously. It must detect a
+              relevant event, decide whether a response is warranted, answer
+              within the required window, and preserve context over time.
+              SVI-Bench makes each failure mode visible.
+            </p>
+          </div>
+
+          <figure class="paper-figure reveal">
+            <img
+              src="assets/svibench_overview.png"
+              alt="Dataset statistics, representative tasks, and the five SVI-Bench evaluation dimensions"
+              width="1855"
+              height="1325"
+              loading="eager"
+              fetchpriority="high"
+            >
+            <figcaption>
+              <strong>SVI-Bench at a glance.</strong> Seventy-five items span
+              autonomous interaction, real-time response, and delegation with
+              memory; videos range from 5 seconds to 24.9 minutes.
+            </figcaption>
+          </figure>
+
+          <div class="taxonomy-grid reveal">
+            <article class="taxonomy-card taxonomy-a">
+              <div class="taxonomy-label"><span>A</span> Autonomous interaction</div>
+              <h3>32 items</h3>
+              <ul>
+                <li><b>A1</b> Monitoring &amp; alerting <span>12</span></li>
+                <li><b>A2</b> App guidance <span>6</span></li>
+                <li><b>A3</b> Live commentary <span>9</span></li>
+                <li><b>A4</b> Vision-driven interaction <span>5</span></li>
+              </ul>
+            </article>
+            <article class="taxonomy-card taxonomy-b">
+              <div class="taxonomy-label"><span>B</span> Real-time response</div>
+              <h3>33 items</h3>
+              <ul>
+                <li><b>B1</b> Real-time translation <span>11</span></li>
+                <li><b>B2</b> Real-time counting <span>12</span></li>
+                <li><b>B3</b> Time awareness <span>10</span></li>
+              </ul>
+            </article>
+            <article class="taxonomy-card taxonomy-c">
+              <div class="taxonomy-label"><span>C</span> Delegation &amp; memory</div>
+              <h3>10 items</h3>
+              <ul>
+                <li><b>C1</b> Long-horizon visual memory <span>8</span></li>
+                <li><b>C2</b> Agent delegation <span>2</span></li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-dimensions">
+        <div class="shell">
+          <div class="section-heading compact reveal">
+            <p class="kicker">Anchored rubric</p>
+            <h2>Five dimensions. One observable timeline.</h2>
+            <p>Select a dimension to see what the Judge measures.</p>
+          </div>
+
+          <div class="dimension-explorer reveal">
+            <div class="dimension-tabs" role="tablist" aria-label="Evaluation dimensions">
+              <button class="dimension-tab active" id="dimension-tab-d1" type="button" role="tab" aria-selected="true" aria-controls="dimension-panel" data-dimension="D1">
+                <span>D1</span> Proactive triggering
+              </button>
+              <button class="dimension-tab" id="dimension-tab-d2" type="button" role="tab" aria-selected="false" aria-controls="dimension-panel" data-dimension="D2">
+                <span>D2</span> Silence correctness
+              </button>
+              <button class="dimension-tab" id="dimension-tab-d3" type="button" role="tab" aria-selected="false" aria-controls="dimension-panel" data-dimension="D3">
+                <span>D3</span> Latency
+              </button>
+              <button class="dimension-tab" id="dimension-tab-d4" type="button" role="tab" aria-selected="false" aria-controls="dimension-panel" data-dimension="D4">
+                <span>D4</span> Response correctness
+              </button>
+              <button class="dimension-tab" id="dimension-tab-d5" type="button" role="tab" aria-selected="false" aria-controls="dimension-panel" data-dimension="D5">
+                <span>D5</span> Delegation &amp; memory
+              </button>
+            </div>
+
+            <article class="dimension-detail" id="dimension-panel" role="tabpanel" aria-labelledby="dimension-tab-d1" aria-live="polite" data-dimension-panel>
+              <div class="dimension-number" data-dimension-number>D1</div>
+              <div>
+                <p class="detail-label">Evaluation question</p>
+                <h3 data-dimension-title>Does the system speak when a target event occurs?</h3>
+                <p data-dimension-description>
+                  Match each annotated event with one valid response—without
+                  misses, premature fires, or duplicate triggering.
+                </p>
+              </div>
+              <div class="dimension-meta">
+                <div><span>Full credit</span><strong data-dimension-anchor>Exactly one valid trigger</strong></div>
+                <div><span>Coverage</span><strong data-dimension-count>55 items</strong></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-protocol" id="protocol">
+        <div class="shell protocol-grid">
+          <div class="section-heading inverse reveal">
+            <p class="kicker">Evaluation protocol</p>
+            <h2>Fix what the system sees. Preserve how the system works.</h2>
+            <p>
+              Every configuration receives the same local MP4, task prompt,
+              query schedule, foreground frame schedule, recording frontend,
+              and scoring rule. Native streaming sessions, memory, and serving
+              paths remain system-specific.
+            </p>
+            <div class="protocol-pills">
+              <span>Local MP4 upload</span>
+              <span>Fresh session per item</span>
+              <span>1 fps foreground schedule</span>
+              <span>One in-flight inference</span>
+              <span>Busy frames skipped</span>
+              <span>No RTSP conversion</span>
+            </div>
+          </div>
+          <figure class="paper-figure paper-figure-dark reveal">
+            <img
+              src="assets/evaluation_protocol.png"
+              alt="Common source video and recording frontend routed to native streaming systems"
+              width="1855"
+              height="1325"
+              loading="lazy"
+            >
+            <figcaption>
+              The protocol standardizes the observable task—not the internal
+              architecture of each deployed system.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-scoring" id="scoring">
+        <div class="shell">
+          <div class="section-heading reveal">
+            <p class="kicker">Reward-hacking-resistant aggregation</p>
+            <h2>Triggering and silence only earn credit together.</h2>
+            <p>
+              Independent D1 and D2 averages reward degenerate behavior. A
+              mostly silent system can appear excellent on silence correctness;
+              a constantly talking system can do the reverse. SVI-Bench couples
+              D1 and D2 inside each item before aggregation.
+            </p>
+          </div>
+
+          <div class="formula-grid reveal">
+            <article class="formula-card formula-primary">
+              <p>Per-item interaction component</p>
+              <div class="formula">a<sub>i</sub> = min(D1<sub>i</sub>, D2<sub>i</sub>)</div>
+              <span>When both dimensions apply; a lone D1 or D2 is retained.</span>
+            </article>
+            <article class="formula-card">
+              <p>Example when all five dimensions apply</p>
+              <div class="formula">
+                q<sub>i</sub> =
+                <span class="fraction"><span>min(D1, D2) + D3 + D4 + D5</span><span>4</span></span>
+              </div>
+              <span>Only applicable components enter the denominator.</span>
+            </article>
+            <article class="formula-card">
+              <p>Official leaderboard score</p>
+              <div class="formula">S = 100 / 75 · Σ q<sub>i</sub></div>
+              <span>Every item has equal weight; no optional importance weights.</span>
+            </article>
+          </div>
+
+          <div class="callout reveal">
+            <div class="callout-mark">≠</div>
+            <div>
+              <strong>Not a minimum of global means.</strong>
+              <p>
+                The official score is not <code>min(mean(D1), mean(D2))</code>
+                and not a five-dimension mean. Coupling happens per item, so
+                success on one item cannot compensate for the opposite failure
+                on another.
+              </p>
+            </div>
+          </div>
+
+          <figure class="paper-figure reveal">
+            <img
+              src="assets/scoring_and_judge.png"
+              alt="Three-level item scoring, item-level D1 D2 coupling, human pilot, and automatic Judge selection"
+              width="1855"
+              height="1325"
+              loading="lazy"
+            >
+            <figcaption>
+              Grades are anchored to observable times, counts, or information
+              points. Human labels select the Judge but never enter formal
+              Judge inputs.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-results" id="results">
+        <div class="shell">
+          <div class="section-heading inverse reveal">
+            <p class="kicker">375-recording evaluation</p>
+            <h2>Current systems still struggle to interact in time.</h2>
+            <p>
+              Five deployed configurations were evaluated on all 75 items. The
+              Overall score is the sole ranking metric; category, dimension,
+              and latency-removed views are diagnostic.
+            </p>
+          </div>
+
+          <div class="results-card reveal">
+            <div class="chart-header">
+              <div>
+                <p class="chart-eyebrow" data-chart-eyebrow>Official leaderboard</p>
+                <h3 data-chart-title>Overall score</h3>
+                <p data-chart-description>Item-level D1/D2 coupling · higher is better</p>
+              </div>
+              <div class="metric-toggle" role="group" aria-label="Result view">
+                <button type="button" class="active" data-result-metric="overall" aria-pressed="true">Overall</button>
+                <button type="button" data-result-metric="withoutD3" aria-pressed="false">Without D3</button>
+              </div>
+            </div>
+            <div class="bar-chart" data-bar-chart aria-live="polite"></div>
+            <div class="chart-axis" aria-hidden="true">
+              <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span>
+            </div>
+            <p class="chart-note" data-chart-note>
+              Overall is the only leaderboard score. Values are computed before rounding.
+            </p>
+          </div>
+
+          <div class="finding-grid reveal">
+            <article>
+              <span class="finding-number">53.61</span>
+              <h3>Highest Overall</h3>
+              <p>JoyAI-VL-Interaction leads the strongest comparison configuration by 28.17 points.</p>
+            </article>
+            <article>
+              <span class="finding-number">29.09</span>
+              <h3>Best raw D1</h3>
+              <p>No evaluated system exceeds 30 on proactive triggering, exposing a shared weakness.</p>
+            </article>
+            <article>
+              <span class="finding-number">17.27 / 91.84</span>
+              <h3>Doubao D1 / D2</h3>
+              <p>The large split shows why silence correctness cannot be rewarded independently.</p>
+            </article>
+          </div>
+
+          <div class="table-card reveal">
+            <div class="table-title">
+              <div>
+                <p class="chart-eyebrow">Official results</p>
+                <h3>Item-coupled leaderboard</h3>
+              </div>
+              <span>75 items per system</span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr><th>Rank</th><th>Deployed configuration</th><th>Overall S ↑</th><th>S without D3 ↑</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="winner"><td>1</td><td>JoyAI-VL-Interaction</td><td>53.61</td><td>39.67</td></tr>
+                  <tr><td>2</td><td>MOSS-VL-Realtime</td><td>25.44</td><td>26.33</td></tr>
+                  <tr><td>3</td><td>MiniCPM-O-4.5-9B</td><td>21.33</td><td>20.44</td></tr>
+                  <tr><td>4</td><td>Doubao Seed 2.1 Pro</td><td>21.22</td><td>29.44</td></tr>
+                  <tr><td>5</td><td>Mage-VL</td><td>19.50</td><td>21.78</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="table-footnote">
+              S without D3 preserves item-level D1/D2 coupling before removing
+              latency. It is a sensitivity analysis, not a second leaderboard.
+            </p>
+          </div>
+
+          <details class="diagnostic-table reveal">
+            <summary>Explore scenario-level results <span>9 categories</span></summary>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr><th>System</th><th>A1</th><th>A2</th><th>A3</th><th>A4</th><th>B1</th><th>B2</th><th>B3</th><th>C1</th><th>C2</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>JoyAI-VL-Interaction</td><td class="best">65.28</td><td class="best">41.67</td><td class="best">44.44</td><td>46.67</td><td class="best">36.36</td><td class="best">48.61</td><td class="best">67.08</td><td class="best">68.75</td><td class="best">75.00</td></tr>
+                  <tr><td>Doubao Seed 2.1 Pro</td><td>45.83</td><td>22.22</td><td>12.96</td><td>40.00</td><td>0.00</td><td>12.50</td><td>30.83</td><td>16.67</td><td>0.00</td></tr>
+                  <tr><td>Mage-VL</td><td>18.06</td><td>5.56</td><td>20.37</td><td class="best">50.00</td><td>6.06</td><td>22.22</td><td>37.92</td><td>8.33</td><td>0.00</td></tr>
+                  <tr><td>MOSS-VL-Realtime</td><td>37.50</td><td>8.33</td><td>37.04</td><td class="best">50.00</td><td>0.00</td><td>22.22</td><td>40.83</td><td>18.75</td><td>0.00</td></tr>
+                  <tr><td>MiniCPM-O-4.5-9B</td><td>23.61</td><td>33.33</td><td>22.22</td><td>6.67</td><td>18.18</td><td>18.06</td><td>36.67</td><td>12.50</td><td>0.00</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="section section-alignment" id="alignment">
+        <div class="shell">
+          <div class="section-heading reveal">
+            <p class="kicker">Human-calibrated Judge</p>
+            <h2>Selected on expert agreement, then frozen.</h2>
+            <p>
+              A 20-item pilot covering all nine scenarios provides 71
+              dimension-level expert labels. The selected five-stage Judge is
+              applied unchanged to the full benchmark.
+            </p>
+          </div>
+          <div class="alignment-grid reveal">
+            <article><span>0.0986</span><strong>MAE ↓</strong><p>on the 1 / 0.5 / 0 scale</p></article>
+            <article><span>83.10%</span><strong>Exact match ↑</strong><p>59 of 71 labels</p></article>
+            <article><span>97.18%</span><strong>Within one level ↑</strong><p>69 of 71 labels</p></article>
+            <article><span>0.7803</span><strong>Quadratic κ ↑</strong><p>human–Judge agreement</p></article>
+          </div>
+          <p class="limitation-note reveal">
+            <strong>Scope:</strong> the pilot contains JoyAI-VL-Interaction
+            recordings. Cross-system human annotation remains necessary to
+            quantify Judge generalization across response styles and latency
+            regimes.
+          </p>
+        </div>
+      </section>
+
+      <section class="section section-flow" id="interactflow">
+        <div class="shell">
+          <div class="section-heading compact reveal">
+            <p class="kicker">InteractFlow</p>
+            <h2>From an annotated item to an auditable score.</h2>
+            <p>
+              Recording and judging are deliberately decoupled. Valid traces
+              can be inspected or rejudged without rerunning the evaluated
+              model; invalid traces return to bounded recording recovery.
+            </p>
+          </div>
+          <figure class="paper-figure reveal">
+            <img
+              src="assets/interactflow_pipeline.png"
+              alt="Seven-stage InteractFlow recording, validation, evidence, judging, and aggregation pipeline"
+              width="1829"
+              height="942"
+              loading="lazy"
+            >
+            <figcaption>
+              One workflow binds task identity, source media, system identity,
+              evidence provenance, Judge stages, and final aggregation.
+            </figcaption>
+          </figure>
+          <div class="flow-steps reveal" aria-label="InteractFlow stages">
+            <span><b>01</b> Annotate</span><i>→</i>
+            <span><b>02</b> Synchronize</span><i>→</i>
+            <span><b>03</b> Record</span><i>→</i>
+            <span><b>04</b> Validate</span><i>→</i>
+            <span><b>05</b> Build evidence</span><i>→</i>
+            <span><b>06</b> Judge ×5</span><i>→</i>
+            <span><b>07</b> Aggregate</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-reproduce" id="reproduce">
+        <div class="shell reproduce-grid">
+          <div class="section-heading inverse reveal">
+            <p class="kicker">Reproduce with one entrypoint</p>
+            <h2>Configure once. Validate locally. Resume safely.</h2>
+            <p>
+              The campaign supervisor records all enabled systems, verifies
+              every accepted trace, constructs label-free Judge manifests, and
+              runs all five judging stages. Completed hash-compatible artifacts
+              survive interruption.
+            </p>
+            <div class="completion-list">
+              <span><b>✓</b> 375 validated recordings</span>
+              <span><b>✓</b> 1,875 successful stage predictions</span>
+              <span><b>✓</b> Five complete model summaries</span>
+              <span><b>✓</b> Blindness and provenance audits</span>
+            </div>
+          </div>
+
+          <div class="terminal reveal" aria-label="Quick start commands">
+            <div class="terminal-bar">
+              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+              <span class="terminal-title">SVI-Bench · bash</span>
+              <button type="button" data-copy-code aria-label="Copy setup commands">Copy</button>
+            </div>
+            <pre><code data-command-block><span class="prompt">$</span> git clone https://github.com/YidanHAI/VL-Interaction-interactflow.git
+<span class="prompt">$</span> cd VL-Interaction-interactflow
+
+<span class="comment"># Install the lightweight orchestration environment</span>
+<span class="prompt">$</span> python3 -m venv .venv
+<span class="prompt">$</span> source .venv/bin/activate
+<span class="prompt">$</span> pip install -r requirements.txt
+<span class="prompt">$</span> npm ci
+
+<span class="comment"># Configure private endpoints and credentials</span>
+<span class="prompt">$</span> cp .env.example .env
+<span class="prompt">$</span> chmod 600 .env
+
+<span class="comment"># Validate, start, and monitor</span>
+<span class="prompt">$</span> bash scripts/run_all.sh validate
+<span class="prompt">$</span> bash scripts/run_all.sh start
+<span class="prompt">$</span> bash scripts/run_all.sh status</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-resources" id="resources">
+        <div class="shell">
+          <div class="section-heading compact reveal">
+            <p class="kicker">Resources</p>
+            <h2>Use the benchmark, inspect the protocol, or automate the run.</h2>
+          </div>
+          <div class="resource-grid reveal">
+            <a href="https://github.com/YidanHAI/VL-Interaction-interactflow" target="_blank" rel="noreferrer">
+              <span class="resource-icon">&lt;/&gt;</span>
+              <div><h3>Code</h3><p>Recording, Judge, audits, adapters, and tests.</p></div>
+              <b>↗</b>
+            </a>
+            <a href="https://github.com/YidanHAI/VL-Interaction-interactflow/blob/main/DATA.md" target="_blank" rel="noreferrer">
+              <span class="resource-icon">▦</span>
+              <div><h3>Data guide</h3><p>Workbook, MP4 layout, manifests, and outputs.</p></div>
+              <b>↗</b>
+            </a>
+            <a href="https://github.com/YidanHAI/VL-Interaction-interactflow/tree/main/skills/interactflow" target="_blank" rel="noreferrer">
+              <span class="resource-icon">◇</span>
+              <div><h3>Codex Skill</h3><p>Configure, run, monitor, resume, and audit.</p></div>
+              <b>↗</b>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-citation" id="citation">
+        <div class="shell citation-grid">
+          <div class="section-heading inverse reveal">
+            <p class="kicker">Citation</p>
+            <h2>Building on SVI-Bench?</h2>
+            <p>Please cite the accompanying manuscript and link to this repository.</p>
+          </div>
+          <div class="citation-box reveal">
+            <button type="button" data-copy-citation>Copy BibTeX</button>
+            <pre><code data-citation>@misc{lin2026svibench,
+  title  = {SVI-Bench: A Benchmark for Streaming Vision-Language
+            Interaction with Latency, Silence, and Long-Horizon Memory},
+  author = {Jianan Lin and Yidan Huang and Xiaoyi Qiao and Dongyi Lv and
+            Yicheng Wang and Shi Suo and Shiying Fan and Yifei Li and
+            Dingyu Yao and Junhao Zhou and Chuanyu Qin and Chenxu Yang and
+            Qingyi Si and Nan Duan and Jiaqi Wang},
+  year   = {2026},
+  url    = {https://github.com/YidanHAI/VL-Interaction-interactflow}
+}</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell footer-inner">
+        <div>
+          <a class="brand brand-footer" href="#top">
+            <img src="assets/svibench-mark.svg" alt="" width="30" height="30">
+            <span>SVI-Bench</span>
+          </a>
+          <p>Streaming vision-language interaction, measured on the timeline.</p>
+        </div>
+        <div class="footer-meta">
+          <p>Jianan Lin*, Yidan Huang*, Xiaoyi Qiao*, Dongyi Lv, Yicheng Wang, Shi Suo, Shiying Fan, Yifei Li, Dingyu Yao, Junhao Zhou, Chuanyu Qin, Chenxu Yang, Qingyi Si†, Nan Duan†, Jiaqi Wang†</p>
+          <p>JD.com · * Equal contribution · † Corresponding authors</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

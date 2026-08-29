@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">SVI-Bench mark</title>
+  <desc id="desc">A stream path connecting an eye, a timing point, and a response pulse.</desc>
+  <defs>
+    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3977e8"/>
+      <stop offset="1" stop-color="#19a48c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="17" fill="#081f33"/>
+  <path d="M10 34c7-12 15-18 24-18 8 0 15 5 20 14-6 10-14 16-24 16-8 0-15-4-20-12Z" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="31" r="7" fill="url(#g)"/>
+  <path d="M13 50h9l4-7 6 12 6-10 4 5h9" fill="none" stroke="#f3b340" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
