@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">SVI-Bench official Overall leaderboard</title>
+  <desc id="desc">Horizontal bars show item-level D1/D2-coupled Overall scores: JoyAI-VL-Interaction 53.61, MOSS-VL-Realtime 25.44, MiniCPM-O-4.5-9B 21.33, Doubao Seed 2.1 Pro 21.22, and Mage-VL 19.50.</desc>
+  <rect width="1200" height="520" rx="24" fill="#f8fafc"/>
+  <text x="44" y="54" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="700" fill="#102a43">Official Overall score</text>
+  <text x="44" y="84" font-family="Inter, Arial, sans-serif" font-size="16" fill="#52667a">Item-level min(D1, D2) coupling · 75 items · higher is better</text>
+
+  <g font-family="Inter, Arial, sans-serif" font-size="14" fill="#708090" text-anchor="middle">
+    <text x="314" y="482">0</text>
+    <text x="456" y="482">10</text>
+    <text x="598" y="482">20</text>
+    <text x="740" y="482">30</text>
+    <text x="882" y="482">40</text>
+    <text x="1024" y="482">50</text>
+    <text x="1166" y="482">60</text>
+  </g>
+
+  <g stroke="#dbe4ec" stroke-width="1">
+    <line x1="314" y1="106" x2="314" y2="458"/>
+    <line x1="456" y1="106" x2="456" y2="458"/>
+    <line x1="598" y1="106" x2="598" y2="458"/>
+    <line x1="740" y1="106" x2="740" y2="458"/>
+    <line x1="882" y1="106" x2="882" y2="458"/>
+    <line x1="1024" y1="106" x2="1024" y2="458"/>
+    <line x1="1166" y1="106" x2="1166" y2="458"/>
+  </g>
+
+  <g font-family="Inter, Arial, sans-serif" font-size="18" fill="#243b53" text-anchor="end">
+    <text x="292" y="143">JoyAI-VL-Interaction</text>
+    <text x="292" y="215">MOSS-VL-Realtime</text>
+    <text x="292" y="287">MiniCPM-O-4.5-9B</text>
+    <text x="292" y="359">Doubao Seed 2.1 Pro</text>
+    <text x="292" y="431">Mage-VL</text>
+  </g>
+
+  <g>
+    <rect x="314" y="116" width="761.3" height="38" rx="7" fill="#2769be"/>
+    <rect x="314" y="188" width="361.2" height="38" rx="7" fill="#2a9d8f"/>
+    <rect x="314" y="260" width="302.9" height="38" rx="7" fill="#e9a23b"/>
+    <rect x="314" y="332" width="301.3" height="38" rx="7" fill="#b66cac"/>
+    <rect x="314" y="404" width="276.9" height="38" rx="7" fill="#5aa9d6"/>
+  </g>
+
+  <g font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#102a43">
+    <text x="1088" y="143">53.61</text>
+    <text x="688" y="215">25.44</text>
+    <text x="630" y="287">21.33</text>
+    <text x="628" y="359">21.22</text>
+    <text x="604" y="431">19.50</text>
+  </g>
+</svg>
