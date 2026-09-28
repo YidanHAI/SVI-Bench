@@ -458,8 +458,10 @@ pre {
 
 .orbit-core span {
   color: #9eb7ca;
-  font-size: 10px;
-  letter-spacing: 0.09em;
+  font-size: 9px;
+  line-height: 1.35;
+  letter-spacing: 0.07em;
+  text-align: center;
   text-transform: uppercase;
 }
 
