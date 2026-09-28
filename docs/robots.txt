@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yidanhai.github.io/VL-Interaction-interactflow/sitemap.xml
+Sitemap: https://yidanhai.github.io/SVI-Bench/sitemap.xml

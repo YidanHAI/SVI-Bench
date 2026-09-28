@@ -15,7 +15,7 @@ benchmark.
 [![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)](#installation)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](#installation)
 
-[Project Page](https://yidanhai.github.io/VL-Interaction-interactflow/) ·
+[Project Page](https://yidanhai.github.io/SVI-Bench/) ·
 [Overview](#overview) · [Benchmark](#benchmark-design) ·
 [Leaderboard](#leaderboard) · [Quick start](#quick-start) ·
 [Data](DATA.md) · [InteractFlow Skill](#codex-skill) ·
@@ -279,8 +279,8 @@ Prerequisites:
 - `cloudflared` when the WebUI must reach a locally launched adapter
 
 ```bash
-git clone https://github.com/YidanHAI/VL-Interaction-interactflow.git
-cd VL-Interaction-interactflow
+git clone https://github.com/YidanHAI/SVI-Bench.git
+cd SVI-Bench
 
 python3 -m venv .venv
 source .venv/bin/activate
@@ -461,7 +461,7 @@ If you use SVI-Bench or InteractFlow, please cite the accompanying manuscript:
             Dingyu Yao and Junhao Zhou and Chuanyu Qin and Chenxu Yang and
             Qingyi Si and Nan Duan and Jiaqi Wang},
   year   = {2026},
-  url    = {https://github.com/YidanHAI/VL-Interaction-interactflow}
+  url    = {https://github.com/YidanHAI/SVI-Bench}
 }
 ```
 
