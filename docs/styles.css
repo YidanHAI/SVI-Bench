@@ -286,6 +286,15 @@ pre {
   font-style: normal;
 }
 
+.hero-paper-title {
+  max-width: 720px;
+  margin: 20px 0 0;
+  color: var(--blue);
+  font-size: clamp(24px, 2.7vw, 36px);
+  font-weight: 750;
+  line-height: 1.22;
+}
+
 .hero-lead {
   max-width: 690px;
   margin: 28px 0 0;
@@ -1753,6 +1762,7 @@ tr.winner td:last-child {
     justify-content: center;
   }
 
+  .hero-paper-title,
   .hero-lead {
     margin-inline: auto;
   }

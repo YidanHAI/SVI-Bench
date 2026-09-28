@@ -2,7 +2,7 @@
 
 # SVI-Bench
 
-### A Benchmark for Streaming Vision-Language Interaction with Latency, Silence, and Long-Horizon Memory
+### Evaluating Human-Perceived Interaction Trajectories in Streaming Video Systems
 
 **SVI-Bench** evaluates *when* a vision-language system speaks, *when* it stays
 silent, *how quickly* it responds, *what* it says, and *what it remembers*.
@@ -454,11 +454,11 @@ If you use SVI-Bench or InteractFlow, please cite the accompanying manuscript:
 
 ```bibtex
 @misc{lin2026svibench,
-  title  = {SVI-Bench: A Benchmark for Streaming Vision-Language Interaction
-            with Latency, Silence, and Long-Horizon Memory},
+  title  = {SVI-Bench: Evaluating Human-Perceived Interaction Trajectories
+            in Streaming Video Systems},
   author = {Jianan Lin and Yidan Huang and Xiaoyi Qiao and Dongyi Lv and
             Yicheng Wang and Shi Suo and Shiying Fan and Yifei Li and
-            Dingyu Yao and Junhao Zhou and Chuanyu Qin and Chenxu Yang and
+            Dingyu Yao and Chenxu Yang and Junhao Zhou and Chuanyu Qin and
             Qingyi Si and Nan Duan and Jiaqi Wang},
   year   = {2026},
   url    = {https://github.com/YidanHAI/SVI-Bench}
