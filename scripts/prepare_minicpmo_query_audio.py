@@ -185,7 +185,7 @@ async def main() -> None:
     manifest = {
         "version": 1,
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "source_tasks": str(tasks_path),
+        "source_tasks": tasks_path.name,
         "source_tasks_sha256": sha256_bytes(tasks_path.read_bytes()),
         "tts": {
             "engine": "edge-tts",

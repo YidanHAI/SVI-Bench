@@ -97,9 +97,11 @@ If videos have descriptive names, require `data/media_index.jsonl` and add:
 --video-map data/media_index.jsonl
 ```
 
-Do not continue unless the report says 75 selected rows, 75 written tasks, and
-zero missing videos. Review duplicate matches and duration mismatches rather
-than choosing a file heuristically.
+Do not continue unless the report says 75 selected rows, 75 written tasks,
+71 unique source videos, and zero missing videos. Four source clips are
+intentionally reused by two tasks each; use the released `media_index.jsonl`
+rather than choosing a file heuristically. Review ambiguous filename matches
+and duration mismatches before recording.
 
 Prepare deterministic MiniCPM query audio:
 

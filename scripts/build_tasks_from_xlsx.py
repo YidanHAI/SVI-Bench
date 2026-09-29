@@ -424,6 +424,7 @@ def main():
         "video_map": str(args.video_map) if args.video_map else None,
         "selected_rows": len(rows),
         "tasks_written": len(tasks),
+        "unique_video_count": len({task["local_video_path"] for task in tasks}),
         "multi_round_tasks": sum(1 for task in tasks if len(task.get("queries") or []) > 1),
         "missing_count": len(missing),
         "missing": missing,

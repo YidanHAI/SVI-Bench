@@ -85,4 +85,6 @@ def test_builder_matches_id_named_media_and_optional_video_map(tmp_path, monkeyp
     assert Path(tasks[0]["local_video_path"]).name == "A1001.mp4"
     assert Path(tasks[1]["local_video_path"]).name == "descriptive-name.mp4"
     assert [round_["query_time_s"] for round_ in tasks[1]["queries"]] == [1.0, 5.0]
-    assert json.loads(report.read_text(encoding="utf-8"))["missing_count"] == 0
+    report_value = json.loads(report.read_text(encoding="utf-8"))
+    assert report_value["missing_count"] == 0
+    assert report_value["unique_video_count"] == 2

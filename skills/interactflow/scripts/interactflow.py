@@ -472,8 +472,10 @@ def run_mapping_check(context: Context) -> tuple[dict[str, Any] | None, list[str
         )
     if len(set(task_ids)) != len(task_ids):
         errors.append("Generated task ids are not unique")
-    if len(set(video_paths)) != len(video_paths):
-        errors.append("The 75 formal tasks do not map to 75 unique videos")
+    if len(set(video_paths)) != 71:
+        errors.append(
+            "The 75 formal tasks must map to the released set of 71 unique videos"
+        )
     if report.get("duplicate_video_keys") and context.video_map is None:
         errors.append("Video directory contains ambiguous normalized filenames")
     return {
@@ -750,8 +752,10 @@ def validate_prepared_tasks(
     videos = [str(task.get("local_video_path") or "") for task in tasks]
     if len(set(ids)) != 75 or not all(ids):
         raise InteractFlowError("Prepared task ids must be 75 unique non-empty values")
-    if len(set(videos)) != 75 or not all(Path(value).is_file() for value in videos):
-        raise InteractFlowError("Prepared tasks must reference 75 unique existing videos")
+    if len(set(videos)) != 71 or not all(Path(value).is_file() for value in videos):
+        raise InteractFlowError(
+            "Prepared tasks must reference the 71 unique existing source videos"
+        )
     if report.get("duplicate_video_keys") and not allow_duplicate_video_keys:
         raise InteractFlowError("Video directory contains ambiguous normalized filenames")
     return tasks, report
@@ -867,7 +871,7 @@ def prepare_inputs(context: Context) -> dict[str, Any]:
         "status": "prepared",
         "task_manifest": str(context.task_manifest),
         "tasks": 75,
-        "unique_videos": 75,
+        "unique_videos": len({str(task["local_video_path"]) for task in tasks}),
         "minicpmo_audio": "reused" if audio_reused else "generated",
     }
 

@@ -27,7 +27,10 @@ import {
   resolveProfileApiKey,
   safeProfileSnapshot,
 } from './vlm_profiles.mjs';
-import { normalizeRecordingWebUrl, recordingWebUrl } from './recording_config.mjs';
+import {
+  loadRecordingCampaignConfig,
+  normalizeRecordingWebUrl,
+} from './recording_config.mjs';
 import {
   classifyVlmResponseText,
   isDeferredVlmText,
@@ -37,7 +40,9 @@ import {
   responseBelongsToQuery,
 } from './vlm_response_protocol.mjs';
 
-const DEFAULT_WEB_URL = recordingWebUrl();
+const RECORDING_CAMPAIGN = loadRecordingCampaignConfig();
+const DEFAULT_WEB_URL = RECORDING_CAMPAIGN.webui.url;
+const DEFAULT_WEB_TLS_REJECT_UNAUTHORIZED = RECORDING_CAMPAIGN.webui.tlsRejectUnauthorized;
 const CURRENT_RECORDING_PROTOCOL = 'webui_session_ready_then_single_pass_upload_v2';
 const MODEL_RESPONSE_TIMEOUT_POLICY = 'wait_then_keep_as_capability_result';
 const MODEL_RESPONSE_OUTCOME_PROTOCOL = 'strict_protocol_non_deferred_non_echo_response_v4';
@@ -273,6 +278,18 @@ function parseArgs(argv) {
   if (args.vlmModel) {
     args.vlmApiBase = normalizeApiBase(args.vlmApiBase);
     args.vlmControlApiBase = normalizeApiBase(args.vlmControlApiBase || args.vlmApiBase);
+    for (const [field, value] of [
+      ['--vlm-api-base', args.vlmApiBase],
+      ['--vlm-control-api-base', args.vlmControlApiBase],
+    ]) {
+      const parsed = new URL(value);
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        throw new Error(`${field} must use HTTP or HTTPS`);
+      }
+      if (parsed.username || parsed.password) {
+        throw new Error(`${field} must not embed credentials`);
+      }
+    }
     if (args.vlmRoute === 'auto') {
       const url = new URL(args.vlmApiBase);
       args.vlmRoute = ['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '8070'
@@ -425,7 +442,7 @@ Options:
   --vlm-api-key KEY            Optional API key; prefer JOYVL_VLM_API_KEY
   --vlm-route ROUTE            auto, joyai_adapter, or direct; default auto
   --vlm-backend-alias MODEL    Allowed backend response model; repeatable
-  --no-vlm-preflight           Disable strict WebUI /models availability check
+  --no-vlm-preflight           Disable strict upstream /models availability check
   --no-vlm-identity-check      Disable response backend identity verification
   --no-vlm-warmup              Disable the fail-closed inference barrier before playback
   --vlm-warmup-timeout-s N     Seconds allowed for each real visual warmup request, default 180
@@ -1798,9 +1815,10 @@ function tryJson(text) {
 
 function redactSecretsForLog(value) {
   if (Array.isArray(value)) return value.map(redactSecretsForLog);
+  if (typeof value === 'string') return redactUrlForLog(value);
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(Object.entries(value).map(([key, item]) => {
-    if (/^(?:api[_-]?key|authorization)$/i.test(key)) {
+    if (/^(?:api[_-]?key|authorization|password|secret|access[_-]?token)$/i.test(key)) {
       return [key, item ? '[REDACTED]' : ''];
     }
     return [key, redactSecretsForLog(item)];
@@ -1848,8 +1866,10 @@ function basicAuthHeader(auth) {
 function redactUrlForLog(urlString) {
   try {
     const url = new URL(urlString);
+    if (url.username) url.username = '[REDACTED]';
+    if (url.password) url.password = '[REDACTED]';
     for (const key of [...url.searchParams.keys()]) {
-      if (/^(?:api[_-]?key|authorization|token)$/i.test(key)) {
+      if (/^(?:api[_-]?key|authorization|password|secret|access[_-]?token|token)$/i.test(key)) {
         url.searchParams.set(key, '[REDACTED]');
       }
     }
@@ -1859,8 +1879,22 @@ function redactUrlForLog(urlString) {
   }
 }
 
+function tlsRejectUnauthorizedFor(urlString) {
+  const url = new URL(urlString);
+  const webUrl = new URL(DEFAULT_WEB_URL);
+  const protocol = url.protocol === 'wss:' ? 'https:'
+    : url.protocol === 'ws:' ? 'http:' : url.protocol;
+  const port = url.port || (protocol === 'https:' ? '443' : '80');
+  const webPort = webUrl.port || (webUrl.protocol === 'https:' ? '443' : '80');
+  if (protocol === webUrl.protocol && url.hostname === webUrl.hostname && port === webPort) {
+    return DEFAULT_WEB_TLS_REJECT_UNAUTHORIZED;
+  }
+  return true;
+}
+
 function requestJson(urlString, {
   method = 'GET', payload = null, timeoutMs = 30000, auth = null, headers = {},
+  tlsRejectUnauthorized = tlsRejectUnauthorizedFor(urlString),
 } = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(urlString);
@@ -1872,7 +1906,7 @@ function requestJson(urlString, {
       port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: `${url.pathname}${url.search}`,
       method,
-      rejectUnauthorized: false,
+      rejectUnauthorized: tlsRejectUnauthorized,
       timeout: timeoutMs,
       headers: {
         ...basicAuthHeader(auth),
@@ -1929,17 +1963,16 @@ async function preflightVlmModel(args) {
     };
   }
 
-  const url = new URL(buildApiUrl(args.webUrl, '/models'));
-  url.searchParams.set('api_base', args.vlmApiBase);
-  if (args.vlmApiKey) url.searchParams.set('api_key', args.vlmApiKey);
+  const url = `${args.vlmApiBase.replace(/\/+$/, '')}/models`;
+  const apiKey = String(args.vlmApiKey || '').replace(/^Bearer\s+/i, '');
   const checkedAt = new Date().toISOString();
   let payload = null;
   let lastError = null;
   for (let attempt = 1; attempt <= args.healthRetries; attempt += 1) {
     try {
-      payload = await requestJson(url.toString(), {
+      payload = await requestJson(url, {
         timeoutMs: 60000,
-        auth: webAuth(args),
+        headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
       });
       break;
     } catch (error) {
@@ -1958,12 +1991,14 @@ async function preflightVlmModel(args) {
       + `${args.healthRetries} request(s): ${lastError?.message || 'unknown error'}`,
     );
   }
-  const availableModels = Array.isArray(payload?.models)
-    ? payload.models.map((item) => String(item?.id || '').trim()).filter(Boolean)
-    : [];
+  const modelRows = Array.isArray(payload?.models)
+    ? payload.models
+    : Array.isArray(payload?.data) ? payload.data : [];
+  const availableModels = modelRows
+    .map((item) => String(item?.id || '').trim()).filter(Boolean);
   if (!availableModels.includes(args.vlmModel)) {
     throw new Error(
-      `VLM preflight rejected ${args.vlmModel}: model is absent from WebUI /models for `
+      `VLM preflight rejected ${args.vlmModel}: model is absent from upstream /models for `
       + `${args.vlmApiBase}; available=${availableModels.join(', ') || '(none)'}`,
     );
   }
@@ -2367,7 +2402,7 @@ async function uploadVideoApi(webUrl, sessionId, filePath, timeoutMs = 120000, a
       port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: `${url.pathname}${url.search}`,
       method: 'POST',
-      rejectUnauthorized: false,
+      rejectUnauthorized: tlsRejectUnauthorizedFor(url.toString()),
       timeout: timeoutMs,
       headers: {
         ...basicAuthHeader(auth),
@@ -2409,7 +2444,7 @@ async function uploadVideoApi(webUrl, sessionId, filePath, timeoutMs = 120000, a
 function openNodeWebSocket(wsUrl, timeoutMs = 15000, auth = null) {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(wsUrl, {
-      rejectUnauthorized: false,
+      rejectUnauthorized: tlsRejectUnauthorizedFor(wsUrl),
       headers: basicAuthHeader(auth),
     });
     const timeout = setTimeout(() => {
@@ -4720,7 +4755,7 @@ async function runTask(browser, args, task, index, total, attempt = 1, maxAttemp
   };
 
   const context = await browser.newContext({
-    ignoreHTTPSErrors: true,
+    ignoreHTTPSErrors: !DEFAULT_WEB_TLS_REJECT_UNAUTHORIZED,
     ...(args.webUsername ? {
       httpCredentials: {
         username: args.webUsername,
@@ -6943,7 +6978,7 @@ async function runTask(browser, args, task, index, total, attempt = 1, maxAttemp
       effective_video_url: effectiveVideoUrl,
       vlm_profile: args.vlmProfileSnapshot || undefined,
       vlm_model: args.vlmModel || undefined,
-      vlm_api_base: args.vlmApiBase || undefined,
+      vlm_api_base: args.vlmApiBase ? redactUrlForLog(args.vlmApiBase) : undefined,
       vlm_route: args.vlmModel ? args.vlmRoute : undefined,
       vlm_formal_eval: args.vlmModel ? args.vlmFormalEval : undefined,
       vlm_preflight: args.vlmPreflightResult || undefined,
@@ -7136,7 +7171,10 @@ async function runTask(browser, args, task, index, total, attempt = 1, maxAttemp
       vlm_responses: vlmResponses,
       final_vlm_response: vlmResponses.length ? vlmResponses[vlmResponses.length - 1] : null,
     };
-    await fsp.writeFile(summaryPath, `${JSON.stringify(summary, null, 2)}\n`);
+    await fsp.writeFile(
+      summaryPath,
+      `${JSON.stringify(redactSecretsForLog(summary), null, 2)}\n`,
+    );
     console.log(`[${index + 1}/${total}] ${task.id}: ${status}, responses=${vlmResponses.length}, out=${taskDir}`);
     if (status !== 'ok' && errorText) {
       console.error(`[${index + 1}/${total}] ${task.id}: final validation error: ${errorText}`);

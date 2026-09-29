@@ -10,6 +10,8 @@ import io
 import json
 import logging
 import os
+import re
+import secrets
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -466,6 +468,42 @@ def create_app(runtime: RuntimeService) -> FastAPI:
                     await asyncio.to_thread(runtime._close_native)
 
     app = FastAPI(title="MOSS-Realtime and Mage API", lifespan=lifespan)
+    service_api_key = str(getattr(runtime.args, "service_api_key", "") or "")
+    max_request_bytes = int(
+        getattr(runtime.args, "max_request_bytes", 64 * 1024 * 1024)
+    )
+
+    def require_authorization(request: Request) -> None:
+        if not service_api_key:
+            return
+        scheme, _, supplied = request.headers.get("authorization", "").partition(" ")
+        if scheme.lower() != "bearer" or not secrets.compare_digest(
+            supplied, service_api_key
+        ):
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+    async def read_json_limited(request: Request) -> dict[str, Any]:
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > max_request_bytes:
+                    raise HTTPException(status_code=413, detail="Request body too large")
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="Invalid Content-Length") from exc
+        chunks: list[bytes] = []
+        received = 0
+        async for chunk in request.stream():
+            received += len(chunk)
+            if received > max_request_bytes:
+                raise HTTPException(status_code=413, detail="Request body too large")
+            chunks.append(chunk)
+        try:
+            value = json.loads(b"".join(chunks) or b"{}")
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=400, detail="Invalid JSON body") from exc
+        if not isinstance(value, dict):
+            raise HTTPException(status_code=400, detail="Request body must be a JSON object")
+        return value
 
     @app.get("/health")
     async def health():
@@ -491,7 +529,8 @@ def create_app(runtime: RuntimeService) -> FastAPI:
         }
 
     @app.get("/v1/models")
-    async def models():
+    async def models(request: Request):
+        require_authorization(request)
         return {
             "object": "list",
             "data": [{
@@ -507,8 +546,9 @@ def create_app(runtime: RuntimeService) -> FastAPI:
         request: Request,
         x_streaming_session: Optional[str] = Header(default=None),
     ):
+        require_authorization(request)
         try:
-            body = await request.json()
+            body = await read_json_limited(request)
             header_timestamp = (
                 request.headers.get("x-frame-time-range")
                 or request.headers.get("x-streaming-time-range")
@@ -561,6 +601,8 @@ def create_app(runtime: RuntimeService) -> FastAPI:
             return sse_response(payload) if body.get("stream") else JSONResponse(payload)
         except SessionCapacityError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except HTTPException:
+            raise
         except (ValueError, OSError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:
@@ -572,7 +614,8 @@ def create_app(runtime: RuntimeService) -> FastAPI:
         request: Request,
         x_streaming_session: Optional[str] = Header(default=None),
     ):
-        body = await request.json()
+        require_authorization(request)
+        body = await read_json_limited(request)
         session_id = (
             x_streaming_session
             or request.headers.get("x-session-id")
@@ -629,6 +672,17 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--session-timeout-seconds", type=float, default=900.0)
     parser.add_argument(
+        "--service-api-key-env",
+        default="MOSS_MAGE_SERVICE_API_KEY",
+        help="Environment variable containing the optional bearer token.",
+    )
+    parser.add_argument("--max-request-bytes", type=int, default=64 * 1024 * 1024)
+    parser.add_argument(
+        "--allow-unauthenticated-non-loopback",
+        action="store_true",
+        help="Allow an unauthenticated non-loopback bind, for use behind a trusted gateway.",
+    )
+    parser.add_argument(
         "--allowed-local-media-roots",
         default=os.environ.get("ALLOWED_LOCAL_MEDIA_ROOTS", "/tmp"),
     )
@@ -650,6 +704,20 @@ def parse_args() -> argparse.Namespace:
         parser.error(f"These values must be positive: {', '.join(invalid)}")
     if not 0 <= args.mage_gate_threshold <= 1:
         parser.error("--mage-gate-threshold must be between 0 and 1")
+    if args.max_request_bytes <= 0:
+        parser.error("--max-request-bytes must be positive")
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", args.service_api_key_env):
+        parser.error("--service-api-key-env must name an environment variable")
+    args.service_api_key = os.environ.get(args.service_api_key_env, "")
+    if (
+        args.host not in {"127.0.0.1", "::1", "localhost"}
+        and not args.service_api_key
+        and not args.allow_unauthenticated_non_loopback
+    ):
+        parser.error(
+            "a non-loopback bind requires MOSS_MAGE_SERVICE_API_KEY or "
+            "--allow-unauthenticated-non-loopback behind a trusted gateway"
+        )
     return args
 
 

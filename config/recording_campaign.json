@@ -10,7 +10,7 @@
     ],
     "username_env": "JOYVL_WEB_USERNAME",
     "password_env": "JOYVL_WEB_PASSWORD",
-    "tls_reject_unauthorized": false
+    "tls_reject_unauthorized": true
   },
   "network": {
     "mode": "direct"

@@ -14,8 +14,10 @@ benchmark.
 [![Judge](https://img.shields.io/badge/judge-5--stage-e76f51)](#human-judge-alignment)
 [![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)](#installation)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](#installation)
+[![License](https://img.shields.io/badge/license-Apache--2.0-2ea44f)](LICENSE)
 
 [Project Page](https://yidanhai.github.io/SVI-Bench/) ·
+[Dataset](https://huggingface.co/datasets/Danmel02/SVI-bench) ·
 [Overview](#overview) · [Benchmark](#benchmark-design) ·
 [Leaderboard](#leaderboard) · [Quick start](#quick-start) ·
 [Data](DATA.md) · [InteractFlow Skill](#codex-skill) ·
@@ -25,8 +27,9 @@ benchmark.
 
 > [!IMPORTANT]
 > This repository contains the current runnable InteractFlow pipeline. The
-> benchmark workbook, source videos, model weights, generated recordings, and
-> credentials are distributed separately and are never committed here.
+> benchmark workbook and 71 source videos are distributed through the
+> [SVI-Bench Hugging Face dataset](https://huggingface.co/datasets/Danmel02/SVI-bench).
+> Model weights, generated recordings, and credentials are never committed here.
 
 ## Overview
 
@@ -63,6 +66,7 @@ behaviors separately observable and traceable to synchronized evidence.
     <td align="center"><strong>3</strong><br>capability groups</td>
     <td align="center"><strong>5</strong><br>dimensions</td>
     <td align="center"><strong>4.21 h</strong><br>source video</td>
+    <td align="center"><strong>71</strong><br>unique videos</td>
     <td align="center"><strong>272</strong><br>item-dimension anchors</td>
   </tr>
 </table>
@@ -284,10 +288,14 @@ cd SVI-Bench
 
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install --require-hashes -r requirements.lock
 npm ci
 npx playwright install chromium
 ```
+
+`requirements.txt` lists the direct Python dependencies. The checked-in
+`requirements.lock` pins their complete resolved dependency graph; regenerate
+it with the command recorded in that file when the direct requirements change.
 
 MOSS and Mage checkpoints use separate serving environments. See
 [`moss_mage_api_service/README.zh-CN.md`](moss_mage_api_service/README.zh-CN.md).
@@ -311,10 +319,14 @@ Follow [DATA.md](DATA.md) to place the workbook and source MP4 files, then build
 the derived task manifest and MiniCPM query-audio cache:
 
 ```bash
+hf download Danmel02/SVI-bench --repo-type dataset \
+  --revision DATASET_COMMIT --local-dir data
+
 python scripts/build_tasks_from_xlsx.py \
   --xlsx data/SVIBench-开源表.xlsx \
   --sheet 题目池 \
   --video-dir data/interaction-75题 \
+  --video-map data/media_index.jsonl \
   --out data/recording_tasks_75.jsonl \
   --report data/recording_tasks_75.report.json
 
@@ -442,6 +454,13 @@ The complete offline suite does not call external model APIs:
 npm test
 ```
 
+Run dependency audits before preparing a release:
+
+```bash
+npm audit --omit=dev --audit-level=moderate
+uvx pip-audit -r requirements.lock --disable-pip
+```
+
 Preview the static Project Page locally:
 
 ```bash
@@ -467,7 +486,7 @@ If you use SVI-Bench or InteractFlow, please cite the accompanying manuscript:
 
 ## License
 
-No repository-level license is currently declared. Do not assume permissions
-beyond applicable law. Add the approved license before announcing a public
-open-source release; third-party components retain their own terms as listed in
-[THIRD_PARTY.md](THIRD_PARTY.md).
+The code in this repository is released under the
+[Apache License 2.0](LICENSE). Benchmark media and annotations are distributed
+separately under the terms stated in the dataset repository. Third-party
+components retain their own terms as listed in [THIRD_PARTY.md](THIRD_PARTY.md).

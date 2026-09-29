@@ -13,6 +13,8 @@ from PIL import Image, ImageOps
 
 SILENCE = "</silence>"
 RESPONSE = "</response>"
+MAX_FRAME_TIMESTAMP_S = 24 * 60 * 60
+MAX_FRAME_WINDOW_S = 60 * 60
 _NUMBER_RE = re.compile(r"\d+(?:\.\d+)?")
 
 
@@ -25,14 +27,30 @@ class FrameWindow:
 
 def parse_frame_window(value: Any, frame_seconds: float = 1.0) -> Optional[FrameWindow]:
     """Parse JoyAI's ``N seconds`` and ``N-M seconds`` timestamp formats."""
+    if not math.isfinite(frame_seconds) or frame_seconds <= 0:
+        raise ValueError("frame_seconds must be finite and positive")
     text = str(value or "").strip()
+    if re.match(r"^-\s*\d", text) or re.search(r"\d\s*-\s*-\s*\d", text):
+        raise ValueError(f"Frame time range must be non-negative: {text!r}")
     numbers = [float(item) for item in _NUMBER_RE.findall(text)]
     if not numbers:
         return None
     start = numbers[0]
     end = numbers[1] if len(numbers) > 1 else start + frame_seconds
+    if not math.isfinite(start) or not math.isfinite(end):
+        raise ValueError(f"Frame time range must be finite: {text!r}")
+    if start < 0 or end < 0:
+        raise ValueError(f"Frame time range must be non-negative: {text!r}")
     if end < start:
         raise ValueError(f"Frame time range must be non-decreasing: {text!r}")
+    if end > MAX_FRAME_TIMESTAMP_S:
+        raise ValueError(
+            f"Frame time range exceeds the {MAX_FRAME_TIMESTAMP_S:g}s service limit: {text!r}"
+        )
+    if end - start > MAX_FRAME_WINDOW_S:
+        raise ValueError(
+            f"Frame time span exceeds the {MAX_FRAME_WINDOW_S:g}s service limit: {text!r}"
+        )
     return FrameWindow(start=start, end=end, label=text)
 
 
@@ -73,6 +91,8 @@ def resolve_frame_windows(
             start = (default_index + index) * frame_seconds
             parsed = FrameWindow(start, start + frame_seconds, f"{start:g} seconds")
         windows.append(parsed)
+    if any(right.start < left.start for left, right in zip(windows, windows[1:])):
+        raise ValueError("Frame time ranges must be ordered by start time")
     return windows
 
 
@@ -398,7 +418,11 @@ class MageStreamingEngine:
                 * self.args.mage_segment_seconds
             )
 
+        remaining_iterations = len(state.pending_frames) * 2 + 2
         while state.pending_frames and state.next_segment_start is not None:
+            remaining_iterations -= 1
+            if remaining_iterations < 0:
+                raise RuntimeError("Mage segment loop did not make bounded progress")
             segment_start = state.next_segment_start
             segment_end = segment_start + self.args.mage_segment_seconds
             latest_end = max(item.window.end for item in state.pending_frames)
@@ -410,9 +434,14 @@ class MageStreamingEngine:
                 if item.window.start < segment_end and item.window.end > segment_start
             ]
             if not selected:
-                state.next_segment_start = segment_end
-                if end_of_stream:
-                    break
+                next_frame_start = min(item.window.start for item in state.pending_frames)
+                next_frame_segment = (
+                    math.floor(next_frame_start / self.args.mage_segment_seconds)
+                    * self.args.mage_segment_seconds
+                )
+                state.next_segment_start = max(segment_end, next_frame_segment)
+                if state.next_segment_start <= segment_start:
+                    raise RuntimeError("Mage segment clock failed to advance")
                 continue
             response, probability = self._run_segment(
                 state,

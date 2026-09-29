@@ -5,7 +5,7 @@
 - 无 session 标识：OpenAI Chat Completions 兼容的单次推理。
 - 带 `x-streaming-session`、`x-session-id` 或请求体 `user`：JoyAI StreamingHarness 兼容的有状态连续推理。
 
-接口为 `POST /v1/chat/completions`，同时提供 `GET /health`、`GET /v1/models` 和 `POST /v1/streaming/reset`。当前服务没有鉴权和 TLS；对公网开放时必须放在带认证、限流和 HTTPS 的网关之后。
+接口为 `POST /v1/chat/completions`，同时提供 `GET /health`、`GET /v1/models` 和 `POST /v1/streaming/reset`。服务默认仅监听回环地址；设置 `MOSS_MAGE_SERVICE_API_KEY` 后，除健康检查外的接口要求 Bearer Token。远程访问还应经过带限流和 HTTPS 的网关。
 
 ## 1. 目录结构
 
@@ -45,7 +45,9 @@ MAGE_GPUS=
 MODEL_DEVICE_MAP=balanced
 MOSS_PORT=8102
 MAGE_PORT=8103
-HOST=0.0.0.0
+HOST=127.0.0.1
+MOSS_MAGE_SERVICE_API_KEY=请生成独立的高熵随机值
+MAX_REQUEST_BYTES=67108864
 ALLOWED_LOCAL_MEDIA_ROOTS=/absolute/path/to/media:/tmp
 ```
 

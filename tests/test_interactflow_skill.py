@@ -145,7 +145,7 @@ def test_read_only_check_can_report_ready_without_exposing_values(tmp_path, monk
                 "selected_rows": 75,
                 "tasks_written": 75,
                 "missing_count": 0,
-                "unique_videos": 75,
+                "unique_videos": 71,
             },
             [],
         ),
@@ -189,7 +189,7 @@ def test_explicit_invalid_root_never_falls_back_to_current_checkout(tmp_path):
 def test_prepare_builds_and_reuses_valid_75_task_inputs(tmp_path, monkeypatch):
     context = make_context(tmp_path)
     videos = []
-    for index in range(75):
+    for index in range(71):
         path = context.video_dir / f"T{index:03d}.mp4"
         path.write_bytes(b"synthetic-video")
         videos.append(path)
@@ -204,7 +204,7 @@ def test_prepare_builds_and_reuses_valid_75_task_inputs(tmp_path, monkeypatch):
             tasks = [
                 {
                     "id": f"T{index:03d}",
-                    "local_video_path": str(videos[index]),
+                    "local_video_path": str(videos[index % len(videos)]),
                     "query": f"query {index}",
                     "queries": [{"id": "R1", "query": f"query {index}", "query_time_s": 0}],
                 }

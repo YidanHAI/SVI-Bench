@@ -27,9 +27,19 @@ function environmentName(value, field) {
 }
 
 export function normalizeRecordingWebUrl(value) {
-  const url = new URL(requiredString(value, 'webui.url'));
+  let url;
+  try {
+    url = new URL(requiredString(value, 'webui.url'));
+  } catch {
+    throw new Error('Recording campaign webui.url is not a valid URL');
+  }
   if (url.protocol !== 'https:') {
     throw new Error('Recording campaign webui.url must use HTTPS');
+  }
+  if (url.username || url.password) {
+    throw new Error(
+      'Recording campaign webui.url must not embed credentials; use the configured environment variables',
+    );
   }
   url.pathname = `${url.pathname.replace(/\/+$/, '')}/`;
   url.search = '';
@@ -75,7 +85,7 @@ export function loadRecordingCampaignConfig(
     identityMarkers,
     usernameEnv: environmentName(raw.webui?.username_env, 'webui.username_env'),
     passwordEnv: environmentName(raw.webui?.password_env, 'webui.password_env'),
-    tlsRejectUnauthorized: raw.webui?.tls_reject_unauthorized === true,
+    tlsRejectUnauthorized: raw.webui?.tls_reject_unauthorized !== false,
   };
 
   const networkMode = requiredString(raw.network?.mode, 'network.mode');

@@ -1219,7 +1219,13 @@ async function handleChatCompletion(req, res) {
 }
 
 const server = http.createServer((req, res) => {
-  const requestPath = new URL(req.url || '/', 'http://localhost').pathname;
+  let requestPath;
+  try {
+    requestPath = new URL(req.url || '/', 'http://localhost').pathname;
+  } catch {
+    sendJson(res, 400, { error: { message: 'Malformed request target' } });
+    return;
+  }
   if (req.method === 'GET' && requestPath === '/health') {
     sendJson(res, 200, {
       ok: true,

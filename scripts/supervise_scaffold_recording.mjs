@@ -11,7 +11,10 @@ import { fileURLToPath } from 'node:url';
 import { promoteTaskDirectory, relocateDirectory } from './artifact_promotion.mjs';
 import { resolveTaskWallWindow } from './task_wall_budget.mjs';
 import { buildRecordingAttemptAudit } from './recording_attempt_audit.mjs';
-import { normalizeRecordingWebUrl, recordingWebUrl } from './recording_config.mjs';
+import {
+  loadRecordingCampaignConfig,
+  normalizeRecordingWebUrl,
+} from './recording_config.mjs';
 import { probeVideo, validateVideoDecode } from './video_quality.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -29,7 +32,9 @@ const DEFAULT_NON_QUERY_REQUEST_TIMEOUT_S = 30;
 const DEFAULT_QUERY_REQUEST_TIMEOUT_S = 180;
 const DEFAULT_PROVIDER_WARMUP_TIMEOUT_S = 180;
 const DEFAULT_MAX_TASK_WALL_S = 3600;
-const DEFAULT_WEB_URL = recordingWebUrl();
+const RECORDING_CAMPAIGN = loadRecordingCampaignConfig();
+const DEFAULT_WEB_URL = RECORDING_CAMPAIGN.webui.url;
+const DEFAULT_WEB_TLS_REJECT_UNAUTHORIZED = RECORDING_CAMPAIGN.webui.tlsRejectUnauthorized;
 
 function printHelp() {
   console.log(`Usage:
@@ -452,6 +457,9 @@ function parseArgs(argv) {
     if (!['http:', 'https:'].includes(deployedUrl.protocol)) {
       throw new Error('--deployed-adapter-api-base must use HTTP or HTTPS');
     }
+    if (deployedUrl.username || deployedUrl.password) {
+      throw new Error('--deployed-adapter-api-base must not embed credentials');
+    }
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(args.deployedAdapterAccessTokenEnv)) {
       throw new Error('--deployed-adapter-access-token-env is invalid');
     }
@@ -493,6 +501,9 @@ function parseArgs(argv) {
       : ['http:', 'https:'];
     if (!validRealtimeSchemes.includes(realtimeUrl.protocol)) {
       throw new Error(`--realtime-api-base must use ${validRealtimeSchemes.join(' or ')}`);
+    }
+    if (realtimeUrl.username || realtimeUrl.password) {
+      throw new Error('--realtime-api-base must not embed credentials');
     }
     if (!Number.isFinite(args.maxRealtimeSessionS) || args.maxRealtimeSessionS <= 0) {
       throw new Error('--max-realtime-session-s must be positive');
@@ -542,6 +553,9 @@ function parseArgs(argv) {
   const upstreamUrl = new URL(args.upstreamApiBase);
   if (!['http:', 'https:'].includes(upstreamUrl.protocol)) {
     throw new Error('--upstream-api-base must use HTTP or HTTPS');
+  }
+  if (upstreamUrl.username || upstreamUrl.password) {
+    throw new Error('--upstream-api-base must not embed credentials');
   }
   args.backendAliases = [...new Set([args.model, ...args.backendAliases]
     .map((value) => String(value || '').trim()).filter(Boolean))];
@@ -787,7 +801,22 @@ function replaceAllSecrets(value, secrets) {
   for (const secret of secrets) {
     if (secret) text = text.split(secret).join('[REDACTED]');
   }
-  return text.replace(/([?&](?:api_key|token)=)[^&\s]+/gi, '$1[REDACTED]');
+  return text
+    .replace(/([?&](?:api_key|password|secret|access_token|token)=)[^&\s]+/gi, '$1[REDACTED]')
+    .replace(/:\/\/[^/@\s]+@/g, '://[REDACTED]@');
+}
+
+function tlsRejectUnauthorizedFor(urlString) {
+  const url = new URL(urlString);
+  const webUrl = new URL(DEFAULT_WEB_URL);
+  const protocol = url.protocol === 'wss:' ? 'https:'
+    : url.protocol === 'ws:' ? 'http:' : url.protocol;
+  const port = url.port || (protocol === 'https:' ? '443' : '80');
+  const webPort = webUrl.port || (webUrl.protocol === 'https:' ? '443' : '80');
+  if (protocol === webUrl.protocol && url.hostname === webUrl.hostname && port === webPort) {
+    return DEFAULT_WEB_TLS_REJECT_UNAUTHORIZED;
+  }
+  return true;
 }
 
 function isTemporarilyBlockedUpstream(error) {
@@ -842,7 +871,7 @@ function request(urlString, {
       path: `${url.pathname}${url.search}`,
       method,
       headers,
-      rejectUnauthorized: false,
+      rejectUnauthorized: tlsRejectUnauthorizedFor(urlString),
       timeout: timeoutMs,
     }, (res) => {
       const chunks = [];
@@ -1828,19 +1857,17 @@ async function main() {
   };
 
   const verifyWebUiRoute = async () => {
-    const modelsUrl = new URL('/models', args.webUrl);
-    modelsUrl.searchParams.set('api_base', activeAdapterApiBase());
-    modelsUrl.searchParams.set('api_key', accessToken);
-    const catalogResponse = await request(modelsUrl.toString(), {
+    const modelsUrl = `${activeAdapterApiBase().replace(/\/+$/, '')}/models`;
+    const catalogResponse = await request(modelsUrl, {
       timeoutMs: 90000,
-      basicUsername: args.webUsername,
-      basicPassword: webPassword,
+      bearer: accessToken,
     });
-    const available = Array.isArray(catalogResponse.json?.models)
-      ? catalogResponse.json.models.map((item) => String(item?.id || '')).filter(Boolean)
-      : [];
-    if (!Array.isArray(catalogResponse.json?.models)) {
-      throw new Error('WebUI could not retrieve the upstream model catalog through the public route');
+    const modelRows = Array.isArray(catalogResponse.json?.models)
+      ? catalogResponse.json.models
+      : Array.isArray(catalogResponse.json?.data) ? catalogResponse.json.data : [];
+    const available = modelRows.map((item) => String(item?.id || '')).filter(Boolean);
+    if (!modelRows.length) {
+      throw new Error('Adapter did not return an upstream model catalog');
     }
     if (!available.includes(args.model)) {
       throw new Error(
@@ -1849,7 +1876,7 @@ async function main() {
       );
     }
 
-    await logEvent('webui_route_verified', {
+    await logEvent('adapter_route_verified', {
       model: args.model,
       route: deployedAdapter ? 'in_pod_scaffold_adapter' : 'cloudflare_scaffold_adapter',
       adapter_api_base: activeAdapterApiBase(),

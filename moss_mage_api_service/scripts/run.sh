@@ -95,4 +95,5 @@ exec "$PYTHON_BIN" -m service.server \
   --mage-max-new-tokens "${MAGE_MAX_NEW_TOKENS:-80}" \
   --mage-max-segments "${MAGE_MAX_SEGMENTS:-0}" \
   --session-timeout-seconds "${SESSION_TIMEOUT_SECONDS:-900}" \
+  --max-request-bytes "${MAX_REQUEST_BYTES:-67108864}" \
   "$NATIVE_FLAG"

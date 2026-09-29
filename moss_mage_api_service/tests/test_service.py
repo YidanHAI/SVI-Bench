@@ -28,6 +28,7 @@ from service.server import (
 )
 from service.streaming import (
     FrameWindow,
+    MAX_FRAME_TIMESTAMP_S,
     MageStreamState,
     MageStreamingEngine,
     RealtimeOutputBuffer,
@@ -99,6 +100,24 @@ class StreamingProtocolTest(unittest.TestCase):
             frame_seconds=1.0,
         )
         self.assertEqual([(w.start, w.end) for w in windows], [(0.0, 1.0), (1.0, 2.0)])
+
+    def test_time_fields_reject_unsafe_ranges(self):
+        for value in ("-1 seconds", f"{MAX_FRAME_TIMESTAMP_S + 1} seconds"):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    resolve_frame_windows(
+                        {"frame_time_range": value},
+                        1,
+                        default_index=0,
+                        frame_seconds=1.0,
+                    )
+        with self.assertRaisesRegex(ValueError, "ordered"):
+            resolve_frame_windows(
+                {"frame_time_ranges": ["2 seconds", "1 second"]},
+                2,
+                default_index=0,
+                frame_seconds=1.0,
+            )
 
     def test_moss_round_across_requests(self):
         output = RealtimeOutputBuffer()
@@ -255,6 +274,36 @@ class APIContractTest(unittest.TestCase):
         self.assertTrue(
             payload["streamingharness"]["streaming_control"]["acknowledged"]
         )
+
+    def test_optional_service_token_and_request_limit(self):
+        runtime = MagicMock()
+        runtime.model_name = "fake-model"
+        runtime.sessions = {}
+        runtime.native_session = None
+        runtime.inference_lock = asyncio.Lock()
+        runtime.args = SimpleNamespace(
+            backend="fake",
+            service_api_key="test-service-token",
+            max_request_bytes=64,
+        )
+        runtime.native_realtime = False
+        runtime.mage_streaming = False
+        runtime.backend.model_devices = []
+        with TestClient(create_app(runtime)) as client:
+            self.assertEqual(client.get("/v1/models").status_code, 401)
+            self.assertEqual(
+                client.get(
+                    "/v1/models",
+                    headers={"Authorization": "Bearer test-service-token"},
+                ).status_code,
+                200,
+            )
+            response = client.post(
+                "/v1/chat/completions",
+                headers={"Authorization": "Bearer test-service-token"},
+                content=b"{" + b" " * 128 + b"}",
+            )
+            self.assertEqual(response.status_code, 413)
 
     def test_in_band_reset_rejects_unknown_action(self):
         runtime = MagicMock()

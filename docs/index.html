@@ -52,6 +52,7 @@
           <a href="#results">Results</a>
           <a href="#interactflow">InteractFlow</a>
           <a href="#reproduce">Run it</a>
+          <a href="https://huggingface.co/datasets/Danmel02/SVI-bench" target="_blank" rel="noreferrer">Data</a>
           <a
             class="nav-github"
             href="https://github.com/YidanHAI/SVI-Bench"
@@ -80,6 +81,12 @@
             </p>
             <div class="hero-actions">
               <a class="button button-primary" href="#results">Explore results</a>
+              <a
+                class="button button-secondary"
+                href="https://huggingface.co/datasets/Danmel02/SVI-bench"
+                target="_blank"
+                rel="noreferrer"
+              >View dataset <span aria-hidden="true">↗</span></a>
               <a
                 class="button button-secondary"
                 href="https://github.com/YidanHAI/SVI-Bench"
@@ -518,7 +525,7 @@
 <span class="comment"># Install the lightweight orchestration environment</span>
 <span class="prompt">$</span> python3 -m venv .venv
 <span class="prompt">$</span> source .venv/bin/activate
-<span class="prompt">$</span> pip install -r requirements.txt
+<span class="prompt">$</span> python -m pip install --require-hashes -r requirements.lock
 <span class="prompt">$</span> npm ci
 
 <span class="comment"># Configure private endpoints and credentials</span>
@@ -545,9 +552,9 @@
               <div><h3>Code</h3><p>Recording, Judge, audits, adapters, and tests.</p></div>
               <b>↗</b>
             </a>
-            <a href="https://github.com/YidanHAI/SVI-Bench/blob/main/DATA.md" target="_blank" rel="noreferrer">
+            <a href="https://huggingface.co/datasets/Danmel02/SVI-bench" target="_blank" rel="noreferrer">
               <span class="resource-icon">▦</span>
-              <div><h3>Data guide</h3><p>Workbook, MP4 layout, manifests, and outputs.</p></div>
+              <div><h3>Dataset</h3><p>Workbook, 71 source videos, mappings, and checksums.</p></div>
               <b>↗</b>
             </a>
             <a href="https://github.com/YidanHAI/SVI-Bench/tree/main/skills/interactflow" target="_blank" rel="noreferrer">

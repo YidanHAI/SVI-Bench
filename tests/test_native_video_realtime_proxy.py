@@ -71,6 +71,16 @@ def terminate(process):
         process.wait(timeout=5)
 
 
+def assert_malformed_target_isolated(port, process):
+    with socket.create_connection(("127.0.0.1", port), timeout=2) as connection:
+        connection.sendall(
+            b"GET http://[::1 HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+        )
+        response = connection.recv(4096)
+    assert b"400" in response.split(b"\r\n", 1)[0]
+    assert process.poll() is None
+
+
 class MageSessionUpstream(ThreadingHTTPServer):
     daemon_threads = True
 
@@ -249,6 +259,7 @@ def test_modelbest_native_realtime_forwards_video_and_query_once(tmp_path):
 
     try:
         health = wait_health(f"http://127.0.0.1:{proxy_port}/health", proxy)
+        assert_malformed_target_isolated(proxy_port, proxy)
         assert health["input_transport"] == "native-video-realtime"
         assert health["upstream_protocol"] == "openai-chat"
         assert health["realtime_protocol"] == "modelbest-video-full-duplex-v1"
@@ -615,6 +626,7 @@ def test_wall_media_clock_and_query_ingress_remain_monotonic_under_backpressure(
 
     try:
         wait_health(f"http://127.0.0.1:{proxy_port}/health", proxy)
+        assert_malformed_target_isolated(proxy_port, proxy)
         endpoint = f"http://127.0.0.1:{proxy_port}/v1/chat/completions"
         query_endpoint = f"http://127.0.0.1:{proxy_port}/v1/query-events"
         session_headers = {"X-Streaming-Session": "moss-clock-session"}

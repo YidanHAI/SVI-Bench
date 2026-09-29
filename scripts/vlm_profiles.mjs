@@ -62,10 +62,15 @@ function normalizeProfile(raw, index) {
   try {
     parsedApiBase = new URL(apiBase);
   } catch {
-    throw new Error(`VLM profile ${id} has invalid api_base: ${apiBase}`);
+    throw new Error(`VLM profile ${id} has invalid api_base`);
   }
   if (!['http:', 'https:'].includes(parsedApiBase.protocol)) {
     throw new Error(`VLM profile ${id} api_base must use http or https`);
+  }
+  if (parsedApiBase.username || parsedApiBase.password) {
+    throw new Error(
+      `VLM profile ${id} api_base must not embed credentials; use api_key_env`,
+    );
   }
 
   const route = requiredString(raw.route, 'route', id);
@@ -159,7 +164,7 @@ function normalizeProfile(raw, index) {
     try {
       parsedRealtimeApiBase = new URL(realtimeApiBase);
     } catch {
-      throw new Error(`VLM profile ${id} has invalid realtime_api_base: ${realtimeApiBase || '(missing)'}`);
+      throw new Error(`VLM profile ${id} has invalid realtime_api_base`);
     }
     const validRealtimeSchemes = realtimeProtocol === 'modelbest-video-full-duplex-v1'
       ? ['ws:', 'wss:']
@@ -167,6 +172,11 @@ function normalizeProfile(raw, index) {
     if (!validRealtimeSchemes.includes(parsedRealtimeApiBase.protocol)) {
       throw new Error(
         `VLM profile ${id} realtime_api_base must use ${validRealtimeSchemes.join(' or ')}`,
+      );
+    }
+    if (parsedRealtimeApiBase.username || parsedRealtimeApiBase.password) {
+      throw new Error(
+        `VLM profile ${id} realtime_api_base must not embed credentials; use api_key_env`,
       );
     }
   } else if (realtimeProtocol || realtimeApiBase || realtimeQueryMode) {

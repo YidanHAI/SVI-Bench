@@ -69,6 +69,7 @@ yarn-error.log*
 *.log
 *.pid
 *.lock
+!requirements.lock
 nohup.out
 
 # Editor and OS metadata
