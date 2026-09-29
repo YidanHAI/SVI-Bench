@@ -454,7 +454,7 @@ The complete offline suite does not call external model APIs:
 npm test
 ```
 
-Run dependency audits before preparing a release:
+Dependency audits run in CI and can also be reproduced locally:
 
 ```bash
 npm audit --omit=dev --audit-level=moderate
