@@ -9,12 +9,12 @@ silent, *how quickly* it responds, *what* it says, and *what it remembers*.
 **InteractFlow** is the reproducible recording-and-judging pipeline behind the
 benchmark.
 
-[![Project Page](https://img.shields.io/badge/Project-Page-0969da?logo=githubpages&logoColor=white)](https://yidanhai.github.io/SVI-Bench/)
-[![Dataset](https://img.shields.io/badge/Dataset-Hugging%20Face-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/datasets/Danmel02/SVI-bench)
+[![Project Page](https://img.shields.io/badge/Project-Page-222222?logo=githubpages&logoColor=white)](https://yidanhai.github.io/SVI-Bench/)
+[![Dataset](https://img.shields.io/badge/Dataset-Hugging%20Face-FFD21E?logo=huggingface&logoColor=FFD21E)](https://huggingface.co/datasets/Danmel02/SVI-bench)
 [![Judge](https://img.shields.io/badge/judge-5--stage-e76f51)](#human-judge-alignment)
-[![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)](#installation)
+[![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=FFD43B)](#installation)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](#installation)
-[![License](https://img.shields.io/badge/license-Apache--2.0-2ea44f)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-D22128?logo=apache&logoColor=white)](LICENSE)
 
 [Overview](#overview) · [Benchmark](#benchmark-design) ·
 [Leaderboard](#leaderboard) · [Quick start](#quick-start) ·
