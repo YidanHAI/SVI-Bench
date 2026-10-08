@@ -20,7 +20,7 @@ benchmark.
 [Dataset](https://huggingface.co/datasets/Danmel02/SVI-bench) ·
 [Overview](#overview) · [Benchmark](#benchmark-design) ·
 [Leaderboard](#leaderboard) · [Quick start](#quick-start) ·
-[Data](DATA.md) · [InteractFlow Skill](#codex-skill) ·
+[Data](DATA.md) · [Data Terms](DATA_TERMS.md) · [InteractFlow Skill](#codex-skill) ·
 [Third-party notices](THIRD_PARTY.md)
 
 </div>
@@ -356,8 +356,8 @@ bash scripts/run_all.sh status
 bash scripts/run_all.sh stop
 ```
 
-Interrupted work resumes from hash-compatible, validated task and stage
-artifacts. For a genuinely independent run, choose new `PIPELINE_OUTPUT_ROOT`
+Interrupted work resumes from completed, validated task and stage artifacts.
+For a genuinely independent run, choose new `PIPELINE_OUTPUT_ROOT`
 and `JUDGE_OUTPUT_ROOT` values instead of editing completed artifacts.
 
 <details>

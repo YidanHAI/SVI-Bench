@@ -4,12 +4,17 @@ The benchmark data are hosted separately at
 [Danmel02/SVI-bench](https://huggingface.co/datasets/Danmel02/SVI-bench).
 Pin a dataset commit with `--revision` when reproducing reported results.
 
+The dataset is governed by the [SVI-Bench Research-Only Data Terms](DATA_TERMS.md).
+It is limited to non-commercial academic research and benchmark evaluation.
+The source videos remain the property of their respective rights holders. The
+software in this repository is licensed separately under Apache-2.0.
+
 SVI-Bench has **75 tasks backed by 71 unique source videos**. Four videos are
 intentionally reused by two tasks each because the same visual trajectory is
 evaluated under different interaction requirements. The released
 `media_index.jsonl` is the authoritative task-to-video mapping.
 
-## Download and verify
+## Download
 
 Download a pinned snapshot into the repository's ignored `data/` directory:
 
@@ -18,19 +23,17 @@ hf download Danmel02/SVI-bench \
   --repo-type dataset \
   --revision DATASET_COMMIT \
   --local-dir data
-
-(cd data && sha256sum --check SHA256SUMS)
 ```
 
 The snapshot layout is:
 
 ```text
 data/
+├── DATA_TERMS.md
 ├── SVIBench-开源表.xlsx
 ├── media_index.jsonl          # 75 task references -> 71 unique files
-├── release_manifest.json
-├── SHA256SUMS
-├── provenance.jsonl
+├── annotations/
+│   └── SVI-Pilot-human-ratings.xlsx
 └── interaction-75题/
     └── *.mp4                  # 71 source videos
 ```
@@ -38,8 +41,7 @@ data/
 The workbook's `题目池` sheet defines the 75 formal tasks, and `评测维度`
 defines their dimension-specific grading anchors. Video containers in the
 release package are remuxed without re-encoding to remove nonessential editor,
-device, user, and creation metadata. `release_manifest.json` records each
-released file's hash, size, duration, and stream signature.
+device, user, and creation metadata.
 
 ## Build recording inputs
 
@@ -73,37 +75,6 @@ python scripts/prepare_minicpmo_query_audio.py \
 Do not use online TTS for private task text without authorization. A local TTS
 implementation may instead produce the same 16 kHz mono float32 files and a
 hash-valid manifest.
-
-## Prepare a release snapshot
-
-Maintainers can create a private, metadata-sanitized staging package without
-modifying the source files:
-
-```bash
-python scripts/prepare_hf_dataset.py \
-  --workbook /path/to/SVIBench-开源表.xlsx \
-  --video-dir /path/to/interaction-75题 \
-  --pilot-labels /path/to/SVI-Pilot-人工打分表.xlsx \
-  --output /path/to/hf-svi-bench-staging
-```
-
-A public-ready package additionally requires complete per-video provenance and
-an approved dataset license:
-
-```bash
-python scripts/prepare_hf_dataset.py \
-  --workbook /path/to/SVIBench-开源表.xlsx \
-  --video-dir /path/to/interaction-75题 \
-  --pilot-labels /path/to/SVI-Pilot-人工打分表.xlsx \
-  --provenance /path/to/provenance.jsonl \
-  --data-license APPROVED_LICENSE_ID \
-  --finalize \
-  --output /path/to/hf-svi-bench-release
-```
-
-Each provenance row must contain `video`, `source`, and `license`, with exactly
-one row for every unique video. Questions and removal requests can be filed at
-the repository issue tracker.
 
 ## Generated evaluation artifacts
 

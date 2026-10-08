@@ -78,3 +78,16 @@ def test_workbook_sanitizer_removes_author_metadata_and_comments(tmp_path):
         assert list(sanitized.custom_doc_props) == []
     finally:
         sanitized.close()
+
+
+def test_dataset_card_declares_custom_research_terms(tmp_path):
+    release.write_dataset_card(tmp_path, "Danmel02/SVI-bench", "other", False)
+    card = (tmp_path / "README.md").read_text(encoding="utf-8")
+    assert "license: other" in card
+    assert "SVI-Bench Dataset Terms" in card
+    assert "solely for academic research" in card
+    assert "commercial use in any form is" in card
+    assert "SHA256SUMS" not in card
+    assert "release_manifest.json" not in card
+    assert "per-file hashes" not in card
+    assert (ROOT / "DATA_TERMS.md").is_file()

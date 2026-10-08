@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Build a sanitized, integrity-checked Hugging Face dataset directory."""
+"""Build a metadata-sanitized Hugging Face dataset directory."""
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 import shutil
@@ -58,21 +57,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dataset-id", default="Danmel02/SVI-bench")
     parser.add_argument("--provenance", type=Path)
-    parser.add_argument("--data-license", default="")
+    parser.add_argument("--data-license", default="other")
     parser.add_argument("--finalize", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--ffmpeg", default="ffmpeg")
     parser.add_argument("--ffprobe", default="ffprobe")
     return parser.parse_args()
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -238,7 +229,7 @@ def assert_metadata_sanitized(probe: dict[str, Any], path: Path) -> None:
     walk(probe)
 
 
-def sanitize_video(source: Path, destination: Path, *, ffmpeg: str, ffprobe: str) -> dict[str, Any]:
+def sanitize_video(source: Path, destination: Path, *, ffmpeg: str, ffprobe: str) -> None:
     temporary = destination.with_name(f".{destination.stem}.tmp{destination.suffix}")
     temporary.unlink(missing_ok=True)
     subprocess.run(
@@ -291,18 +282,6 @@ def sanitize_video(source: Path, destination: Path, *, ffmpeg: str, ffprobe: str
         raise ValueError(f"duration changed while sanitizing {source}")
     assert_metadata_sanitized(output_probe, temporary)
     temporary.replace(destination)
-    return {
-        "sha256": sha256_file(destination),
-        "bytes": destination.stat().st_size,
-        "duration_s": round(output_duration, 3),
-        "streams": [
-            {key: value for key, value in zip(
-                ("type", "codec", "width", "height", "sample_rate", "channels"),
-                signature,
-            ) if value is not None}
-            for signature in media_signature(output_probe)
-        ],
-    }
 
 
 def load_provenance(path: Path | None, expected_videos: set[str]) -> list[dict[str, Any]]:
@@ -320,12 +299,11 @@ def load_provenance(path: Path | None, expected_videos: set[str]) -> list[dict[s
 
 def write_dataset_card(output: Path, dataset_id: str, data_license: str, finalized: bool) -> None:
     frontmatter = ""
-    if finalized:
+    if data_license:
         frontmatter = f"---\npretty_name: SVI-Bench\nlicense: {data_license}\nlanguage:\n- zh\n- en\n---\n\n"
-    status = (
-        "This package passed the release checks described below."
-        if finalized
-        else "This is a private staging package. Do not make it public until provenance and license review is complete."
+    status = "" if finalized else (
+        "This is a private staging package. Do not make it public until "
+        "provenance and license review is complete."
     )
     text = f"""{frontmatter}# SVI-Bench dataset
 
@@ -335,16 +313,19 @@ source videos. Four videos are intentionally reused across task categories;
 
 {status}
 
+Use of this dataset is governed by the [SVI-Bench Dataset Terms](DATA_TERMS.md).
+It is intended solely for academic research, and commercial use in any form is
+prohibited. Copyright in the source videos remains with the respective rights
+holders.
+
 ## Files
 
 - `SVIBench-开源表.xlsx`: task definitions and dimension-specific grading anchors.
 - `interaction-75题/`: 71 metadata-sanitized source videos. Streams are remuxed without
   re-encoding.
-- `media_index.jsonl`: 75 task references with per-file hashes and sizes.
-- `provenance.jsonl`: per-video source and licensing records (final releases).
+- `media_index.jsonl`: mapping from the 75 task IDs to the 71 source videos.
 - `annotations/SVI-Pilot-human-ratings.xlsx`: expert pilot labels used for Judge
   alignment.
-- `release_manifest.json` and `SHA256SUMS`: integrity metadata.
 
 Use the evaluation code at https://github.com/YidanHAI/SVI-Bench. Pin both the
 code commit and the Hugging Face dataset revision when reporting results.
@@ -407,17 +388,19 @@ def main() -> None:
     sanitized_workbook = output / "SVIBench-开源表.xlsx"
     sanitize_workbook(workbook, sanitized_workbook)
     workbook_task_ids(sanitized_workbook)
-    sanitized_pilot = None
+    data_terms_source = ROOT / "DATA_TERMS.md"
+    if not data_terms_source.is_file():
+        raise FileNotFoundError(data_terms_source)
+    shutil.copy2(data_terms_source, output / "DATA_TERMS.md")
     if pilot_labels is not None:
         annotation_dir = output / "annotations"
         annotation_dir.mkdir()
         sanitized_pilot = annotation_dir / "SVI-Pilot-human-ratings.xlsx"
         sanitize_workbook(pilot_labels, sanitized_pilot)
 
-    media_details: dict[str, dict[str, Any]] = {}
     for index, (name, source) in enumerate(sorted(sources.items()), 1):
         print(f"[{index}/{len(sources)}] {name}", flush=True)
-        media_details[name] = sanitize_video(
+        sanitize_video(
             source,
             video_output / name,
             ffmpeg=args.ffmpeg,
@@ -426,12 +409,9 @@ def main() -> None:
 
     released_mapping = []
     for row in mapping:
-        details = media_details[row["video"]]
         released_mapping.append({
             "id": row["id"],
             "video": f"interaction-75题/{row['video']}",
-            "sha256": details["sha256"],
-            "bytes": details["bytes"],
         })
     released_index = output / "media_index.jsonl"
     released_index.write_text(
@@ -444,56 +424,13 @@ def main() -> None:
             encoding="utf-8",
         )
 
-    manifest = {
-        "schema_version": 1,
-        "dataset_id": args.dataset_id,
-        "task_count": len(mapping),
-        "unique_video_count": len(sources),
-        "release_ready": bool(args.finalize),
-        "data_license": args.data_license.strip() or None,
-        "workbook": {
-            "path": sanitized_workbook.name,
-            "sha256": sha256_file(sanitized_workbook),
-            "bytes": sanitized_workbook.stat().st_size,
-        },
-        "media_index": {
-            "path": released_index.name,
-            "sha256": sha256_file(released_index),
-            "bytes": released_index.stat().st_size,
-        },
-        "pilot_labels": ({
-            "path": sanitized_pilot.relative_to(output).as_posix(),
-            "sha256": sha256_file(sanitized_pilot),
-            "bytes": sanitized_pilot.stat().st_size,
-        } if sanitized_pilot is not None else None),
-        "videos": [
-            {"path": f"interaction-75题/{name}", **media_details[name]}
-            for name in sorted(media_details)
-        ],
-    }
-    manifest_path = output / "release_manifest.json"
-    manifest_path.write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
     write_dataset_card(output, args.dataset_id, args.data_license.strip(), args.finalize)
     if not args.finalize:
         (output / "PRIVATE_STAGING_ONLY.txt").write_text(
-            "Provenance and data-license review are incomplete. Keep this dataset private.\n",
+            "Per-video provenance review is incomplete. Keep this dataset private.\n",
             encoding="utf-8",
         )
 
-    checksum_paths = [
-        path for path in output.rglob("*")
-        if path.is_file() and path.name != "SHA256SUMS"
-    ]
-    (output / "SHA256SUMS").write_text(
-        "".join(
-            f"{sha256_file(path)}  {path.relative_to(output).as_posix()}\n"
-            for path in sorted(checksum_paths)
-        ),
-        encoding="utf-8",
-    )
     print(json.dumps({
         "status": "prepared",
         "output": str(output),
