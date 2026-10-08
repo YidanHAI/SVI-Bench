@@ -10,7 +10,7 @@ silent, *how quickly* it responds, *what* it says, and *what it remembers*.
 benchmark.
 
 [![Project Page](https://img.shields.io/badge/Project-Page-0969da?logo=githubpages&logoColor=white)](https://yidanhai.github.io/SVI-Bench/)
-[![Dataset](https://img.shields.io/badge/Dataset-Hugging%20Face-FFD21E?logo=huggingface&logoColor=black)](https://huggingface.co/datasets/Danmel02/SVI-bench)
+[![Dataset](https://img.shields.io/badge/Dataset-Hugging%20Face-FFD21E?logo=huggingface&logoColor=white)](https://huggingface.co/datasets/Danmel02/SVI-bench)
 [![Judge](https://img.shields.io/badge/judge-5--stage-e76f51)](#human-judge-alignment)
 [![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)](#installation)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](#installation)
