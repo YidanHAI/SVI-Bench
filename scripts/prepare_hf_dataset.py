@@ -320,8 +320,8 @@ holders.
 
 ## Files
 
-- `SVIBench-开源表.xlsx`: task definitions and dimension-specific grading anchors.
-- `interaction-75题/`: 71 metadata-sanitized source videos. Streams are remuxed without
+- `SVI_bench_tasks_and_anchors.xlsx`: task definitions and dimension-specific grading anchors.
+- `source_videos/`: 71 metadata-sanitized source videos. Streams are remuxed without
   re-encoding.
 - `media_index.jsonl`: mapping from the 75 task IDs to the 71 source videos.
 - `annotations/SVI-Pilot-human-ratings.xlsx`: expert pilot labels used for Judge
@@ -382,10 +382,10 @@ def main() -> None:
         if not args.overwrite:
             raise FileExistsError(f"output exists; pass --overwrite to replace it: {output}")
         shutil.rmtree(output)
-    video_output = output / "interaction-75题"
+    video_output = output / "source_videos"
     video_output.mkdir(parents=True)
 
-    sanitized_workbook = output / "SVIBench-开源表.xlsx"
+    sanitized_workbook = output / "SVI_bench_tasks_and_anchors.xlsx"
     sanitize_workbook(workbook, sanitized_workbook)
     workbook_task_ids(sanitized_workbook)
     data_terms_source = ROOT / "DATA_TERMS.md"
@@ -411,7 +411,7 @@ def main() -> None:
     for row in mapping:
         released_mapping.append({
             "id": row["id"],
-            "video": f"interaction-75题/{row['video']}",
+            "video": f"source_videos/{row['video']}",
         })
     released_index = output / "media_index.jsonl"
     released_index.write_text(

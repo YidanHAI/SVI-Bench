@@ -30,11 +30,11 @@ The snapshot layout is:
 ```text
 data/
 ├── DATA_TERMS.md
-├── SVIBench-开源表.xlsx
+├── SVI_bench_tasks_and_anchors.xlsx
 ├── media_index.jsonl          # 75 task references -> 71 unique files
 ├── annotations/
 │   └── SVI-Pilot-human-ratings.xlsx
-└── interaction-75题/
+└── source_videos/
     └── *.mp4                  # 71 source videos
 ```
 
@@ -49,9 +49,9 @@ Generate machine-local task paths from the released workbook and mapping:
 
 ```bash
 python scripts/build_tasks_from_xlsx.py \
-  --xlsx data/SVIBench-开源表.xlsx \
+  --xlsx data/SVI_bench_tasks_and_anchors.xlsx \
   --sheet 题目池 \
-  --video-dir data/interaction-75题 \
+  --video-dir data/source_videos \
   --video-map data/media_index.jsonl \
   --out data/recording_tasks_75.jsonl \
   --report data/recording_tasks_75.report.json

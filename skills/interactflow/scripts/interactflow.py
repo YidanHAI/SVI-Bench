@@ -248,12 +248,12 @@ def build_context(root: Path, video_map: str | None) -> tuple[Context | None, li
 
     source = config.get("task_source") if isinstance(config.get("task_source"), dict) else {}
     workbook = resolve_from_root(
-        root, source.get("xlsx") or "data/SVIBench-开源表.xlsx"
+        root, source.get("xlsx") or "data/SVI_bench_tasks_and_anchors.xlsx"
     )
     if not effective.get("BENCHMARK_WORKBOOK", "").strip():
         effective["BENCHMARK_WORKBOOK"] = str(workbook)
     video_dir = resolve_from_root(
-        root, source.get("video_dir") or "data/interaction-75题"
+        root, source.get("video_dir") or "data/source_videos"
     )
     task_manifest = resolve_from_root(
         root, source.get("manifest") or "data/recording_tasks_75.jsonl"

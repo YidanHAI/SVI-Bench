@@ -315,9 +315,9 @@ hf download Danmel02/SVI-bench --repo-type dataset \
   --revision DATASET_COMMIT --local-dir data
 
 python scripts/build_tasks_from_xlsx.py \
-  --xlsx data/SVIBench-开源表.xlsx \
+  --xlsx data/SVI_bench_tasks_and_anchors.xlsx \
   --sheet 题目池 \
-  --video-dir data/interaction-75题 \
+  --video-dir data/source_videos \
   --video-map data/media_index.jsonl \
   --out data/recording_tasks_75.jsonl \
   --report data/recording_tasks_75.report.json

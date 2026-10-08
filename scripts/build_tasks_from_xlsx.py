@@ -11,8 +11,8 @@ from judge_workbook_contract import load_workbook_compatible
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_XLSX = ROOT / "data" / "SVIBench-开源表.xlsx"
-DEFAULT_VIDEO_DIR = ROOT / "data" / "interaction-75题"
+DEFAULT_XLSX = ROOT / "data" / "SVI_bench_tasks_and_anchors.xlsx"
+DEFAULT_VIDEO_DIR = ROOT / "data" / "source_videos"
 DEFAULT_SHEET = "题目池"
 REQUIRED_HEADERS = (
     "id",

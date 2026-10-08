@@ -99,7 +99,7 @@ Never print, summarize, commit, or persist credential values. Report only which
 variable names are missing.
 
 Keep workbooks, source videos, model weights, generated media, logs, and result
-artifacts outside Git. Use `data/SVIBench-开源表.xlsx` as the task and rubric
+artifacts outside Git. Use `data/SVI_bench_tasks_and_anchors.xlsx` as the task and rubric
 source. Do not use the human pilot workbook as a formal Judge input.
 
 ## Report completion

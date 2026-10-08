@@ -76,17 +76,17 @@ npm test
 Require:
 
 ```text
-data/SVIBench-开源表.xlsx
-data/interaction-75题/
+data/SVI_bench_tasks_and_anchors.xlsx
+data/source_videos/
 ```
 
 If every video is named `<task-id>.mp4`, build the task manifest directly:
 
 ```bash
 python scripts/build_tasks_from_xlsx.py \
-  --xlsx data/SVIBench-开源表.xlsx \
+  --xlsx data/SVI_bench_tasks_and_anchors.xlsx \
   --sheet 题目池 \
-  --video-dir data/interaction-75题 \
+  --video-dir data/source_videos \
   --out data/recording_tasks_75.jsonl \
   --report data/recording_tasks_75.report.json
 ```

@@ -17,9 +17,9 @@ SPEC.loader.exec_module(interactflow)
 
 
 def make_context(tmp_path):
-    video_dir = tmp_path / "data" / "interaction-75题"
+    video_dir = tmp_path / "data" / "source_videos"
     video_dir.mkdir(parents=True)
-    workbook = tmp_path / "data" / "SVIBench-开源表.xlsx"
+    workbook = tmp_path / "data" / "SVI_bench_tasks_and_anchors.xlsx"
     workbook.touch()
     config = {
         "version": 2,
@@ -39,9 +39,9 @@ def make_context(tmp_path):
         "vlm_registry": "config/vlm_models.json",
         "task_source": {
             "manifest": "data/recording_tasks_75.jsonl",
-            "xlsx": "data/SVIBench-开源表.xlsx",
+            "xlsx": "data/SVI_bench_tasks_and_anchors.xlsx",
             "sheet": "题目池",
-            "video_dir": "data/interaction-75题",
+            "video_dir": "data/source_videos",
         },
         "models": [
             {"id": model_id, "enabled": True, "vlm_profile": f"profile-{index}"}

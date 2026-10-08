@@ -32,9 +32,9 @@
   "vlm_registry": "config/vlm_models.json",
   "task_source": {
     "manifest": "data/recording_tasks_75.jsonl",
-    "xlsx": "data/SVIBench-开源表.xlsx",
+    "xlsx": "data/SVI_bench_tasks_and_anchors.xlsx",
     "sheet": "题目池",
-    "video_dir": "data/interaction-75题"
+    "video_dir": "data/source_videos"
   },
   "output_root": "outputs/recording_campaign",
   "defaults": {
