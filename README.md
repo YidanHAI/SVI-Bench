@@ -9,15 +9,13 @@ silent, *how quickly* it responds, *what* it says, and *what it remembers*.
 **InteractFlow** is the reproducible recording-and-judging pipeline behind the
 benchmark.
 
-[![Benchmark](https://img.shields.io/badge/benchmark-75%20items-2769be)](#benchmark-at-a-glance)
-[![Recordings](https://img.shields.io/badge/evaluation-375%20recordings-2a9d8f)](#leaderboard)
+[![Project Page](https://img.shields.io/badge/Project-Page-0969da?logo=githubpages&logoColor=white)](https://yidanhai.github.io/SVI-Bench/)
+[![Dataset](https://img.shields.io/badge/Dataset-Hugging%20Face-FFD21E?logo=huggingface&logoColor=black)](https://huggingface.co/datasets/Danmel02/SVI-bench)
 [![Judge](https://img.shields.io/badge/judge-5--stage-e76f51)](#human-judge-alignment)
 [![Python](https://img.shields.io/badge/Python-%E2%89%A53.10-3776AB?logo=python&logoColor=white)](#installation)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](#installation)
 [![License](https://img.shields.io/badge/license-Apache--2.0-2ea44f)](LICENSE)
 
-[Project Page](https://yidanhai.github.io/SVI-Bench/) ·
-[Dataset](https://huggingface.co/datasets/Danmel02/SVI-bench) ·
 [Overview](#overview) · [Benchmark](#benchmark-design) ·
 [Leaderboard](#leaderboard) · [Quick start](#quick-start) ·
 [Data](DATA.md) · [Data Terms](DATA_TERMS.md) · [InteractFlow Skill](#codex-skill) ·
