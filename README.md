@@ -23,12 +23,6 @@ benchmark.
 
 </div>
 
-> [!IMPORTANT]
-> This repository contains the current runnable InteractFlow pipeline. The
-> benchmark workbook and 71 source videos are distributed through the
-> [SVI-Bench Hugging Face dataset](https://huggingface.co/datasets/Danmel02/SVI-bench).
-> Model weights, generated recordings, and credentials are never committed here.
-
 ## Overview
 
 Offline video QA asks whether a model can answer a question about a clip.
